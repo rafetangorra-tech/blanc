@@ -1,0 +1,319 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site, worlds } from '../data/site';
+
+const year = new Date().getFullYear();
+---
+
+<BaseLayout>
+  <!-- Scroll progress -->
+  <div
+    id="progress"
+    class="fixed left-0 top-0 z-50 h-[3px] w-full origin-left scale-x-0 bg-current"
+    aria-hidden="true"
+  >
+  </div>
+
+  <!-- Fixed nav — mix-blend-difference keeps it legible over any world -->
+  <header
+    class="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-5 py-4 text-white mix-blend-difference sm:px-8"
+  >
+    <a href="#top" class="text-xl font-semibold lowercase tracking-tight">blanc</a>
+    <nav class="flex items-center gap-4 sm:gap-6" aria-label="Worlds">
+      {
+        worlds.map((w) => (
+          <a
+            href={`#${w.id}`}
+            data-dot={w.id}
+            class="group hidden items-center gap-2 text-xs uppercase tracking-[0.2em] transition-opacity sm:flex"
+          >
+            <span class="dot h-1.5 w-1.5 rounded-full bg-white/40 transition-all group-hover:bg-white" />
+            {w.name.replace(' World', '')}
+          </a>
+        ))
+      }
+      <a
+        href="#booking"
+        class="rounded-full border border-white/50 px-4 py-1.5 text-xs uppercase tracking-[0.2em] transition-colors hover:bg-white hover:text-black"
+        >Booking</a
+      >
+    </nav>
+  </header>
+
+  <main id="top">
+    <!-- ============ INTRO — the blank page ============ -->
+    <section
+      id="intro"
+      class="relative flex h-screen items-center justify-center overflow-hidden"
+      style="background: var(--canvas); color: var(--canvas-ink);"
+    >
+      <div class="px-6 text-center">
+        <p
+          class="reveal mb-6 text-xs uppercase tracking-[0.4em] text-black/40"
+        >
+          songwriting collective
+        </p>
+        <h1
+          id="wordmark"
+          class="text-[22vw] font-semibold leading-none tracking-tight sm:text-[16vw] lg:text-[14rem]"
+        >
+          blanc
+        </h1>
+        <p
+          class="reveal mx-auto mt-6 max-w-xl text-lg text-black/60 sm:text-xl"
+        >
+          {site.tagline}
+        </p>
+      </div>
+
+      <div
+        class="scroll-cue absolute bottom-8 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.3em] text-black/40"
+      >
+        <span class="block">scroll</span>
+      </div>
+    </section>
+
+    <!-- ============ WORLDS ============ -->
+    {
+      worlds.map((w) => (
+        <section
+          id={w.id}
+          class="world relative flex min-h-screen items-center overflow-hidden px-6 py-24 sm:px-10"
+          data-accent={w.accent}
+          style={`background:${w.bg}; color:${w.ink};`}
+        >
+          {/* decorative glow */}
+          <div
+            class="pointer-events-none absolute inset-0"
+            aria-hidden="true"
+            style={`background: radial-gradient(60% 60% at 70% 30%, ${w.accent}22, transparent 70%), radial-gradient(50% 50% at 20% 80%, ${w.accent2}1f, transparent 70%);`}
+          />
+          {/* giant parallax index number */}
+          <div
+            data-speed="2"
+            aria-hidden="true"
+            class={`pointer-events-none absolute -right-4 top-6 select-none text-[36vw] font-black leading-none opacity-[0.06] font-${w.font}`}
+          >
+            {w.index}
+          </div>
+
+          <div class="relative z-10 mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[1.2fr_1fr] lg:items-center">
+            <div>
+              <p
+                class="reveal mb-4 text-xs uppercase tracking-[0.35em]"
+                style={`color:${w.accent}`}
+              >
+                {w.index} — {w.genre}
+              </p>
+              <h2
+                class={`reveal font-${w.font} text-6xl leading-[0.95] sm:text-7xl lg:text-8xl`}
+              >
+                {w.name}
+              </h2>
+              <p
+                class="reveal mt-6 max-w-lg text-lg leading-relaxed"
+                style={`color:${w.muted}`}
+              >
+                {w.blurb}
+              </p>
+            </div>
+
+            {/* player / embed */}
+            <div class="reveal" data-speed="0.6">
+              {w.embed ? (
+                <div class="aspect-video w-full overflow-hidden rounded-2xl">
+                  <iframe
+                    src={w.embed}
+                    class="h-full w-full"
+                    loading="lazy"
+                    allow="encrypted-media; fullscreen"
+                    title={`${w.name} player`}
+                  />
+                </div>
+              ) : (
+                <div
+                  class="flex items-center gap-4 rounded-2xl border p-5 backdrop-blur-sm"
+                  style={`border-color:${w.accent}40; background:${w.ink}0a;`}
+                >
+                  <div
+                    class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
+                    style={`background:${w.accent}; color:${w.bg};`}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium">{w.track}</p>
+                    <p class="text-xs" style={`color:${w.muted}`}>
+                      track coming soon
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      ))
+    }
+
+    <!-- ============ BOOKING / CONTACT ============ -->
+    <section
+      id="booking"
+      class="relative flex min-h-[80vh] items-center justify-center px-6 py-24 text-center"
+      style="background: var(--canvas-ink); color: var(--canvas);"
+    >
+      <div class="max-w-2xl">
+        <p class="reveal text-xs uppercase tracking-[0.4em] text-white/40">
+          work with blanc
+        </p>
+        <h2 class="reveal mt-5 text-5xl font-semibold leading-tight sm:text-6xl">
+          Let's make something<br />that has no genre.
+        </h2>
+        <p class="reveal mx-auto mt-6 max-w-lg text-white/60">
+          Booking, sync licensing, features, co-writes — we're open. Tell us
+          which world you're calling from.
+        </p>
+        <a
+          href={`mailto:${site.bookingEmail}`}
+          class="reveal mt-9 inline-block rounded-full bg-white px-8 py-3 text-sm font-medium uppercase tracking-[0.2em] text-black transition-transform hover:-translate-y-0.5"
+        >
+          Get in touch
+        </a>
+      </div>
+    </section>
+
+    <footer
+      class="flex flex-col items-center justify-between gap-3 px-6 py-8 text-xs text-black/40 sm:flex-row"
+      style="background: var(--canvas);"
+    >
+      <span class="lowercase tracking-[0.2em]">blanc</span>
+      <span>© {year} blanc — one group. many worlds.</span>
+    </footer>
+  </main>
+
+  <script>
+    import gsap from 'gsap';
+    import { ScrollTrigger } from 'gsap/ScrollTrigger';
+    import Lenis from 'lenis';
+
+    const root = document.documentElement;
+    root.classList.add('js');
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (!reduced) {
+      gsap.registerPlugin(ScrollTrigger);
+
+      // ---- Smooth scroll (Lenis) wired into GSAP's ticker ----
+      const lenis = new Lenis({ lerp: 0.1, wheelMultiplier: 1 });
+      lenis.on('scroll', ScrollTrigger.update);
+      gsap.ticker.add((time) => lenis.raf(time * 1000));
+      gsap.ticker.lagSmoothing(0);
+
+      // Anchor links scroll smoothly through Lenis
+      document.querySelectorAll('a[href^="#"]').forEach((a) => {
+        a.addEventListener('click', (e) => {
+          const id = a.getAttribute('href');
+          if (!id || id === '#') return;
+          const target = document.querySelector(id);
+          if (!target) return;
+          e.preventDefault();
+          lenis.scrollTo(target, { offset: 0, duration: 1.2 });
+        });
+      });
+
+      // ---- Intro: wordmark reacts to scroll (the signature moment) ----
+      gsap.set('.reveal', { y: 32 });
+      gsap.to('.reveal', {}); // no-op to ensure plugin init order
+
+      // Intro reveal on load
+      gsap
+        .timeline({ defaults: { ease: 'power3.out' } })
+        .to('#intro .reveal', { opacity: 1, y: 0, duration: 1, stagger: 0.15 }, 0.2);
+
+      // Wordmark spreads + fades as you leave the blank page
+      gsap.to('#wordmark', {
+        letterSpacing: '0.15em',
+        opacity: 0.15,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '#intro',
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true,
+        },
+      });
+
+      // ---- Per-world reveals, parallax, and nav sync ----
+      gsap.utils.toArray('.world').forEach((section) => {
+        const el = section as HTMLElement;
+
+        // staggered content reveal
+        gsap.to(el.querySelectorAll('.reveal'), {
+          opacity: 1,
+          y: 0,
+          duration: 1,
+          ease: 'power3.out',
+          stagger: 0.1,
+          scrollTrigger: { trigger: el, start: 'top 68%' },
+        });
+
+        // parallax layers
+        el.querySelectorAll('[data-speed]').forEach((layer) => {
+          const l = layer as HTMLElement;
+          const speed = parseFloat(l.dataset.speed || '1');
+          gsap.to(l, {
+            yPercent: -10 * speed,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: el,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: true,
+            },
+          });
+        });
+
+        // active nav dot
+        const dot = document.querySelector(`[data-dot="${el.id}"] .dot`);
+        ScrollTrigger.create({
+          trigger: el,
+          start: 'top 50%',
+          end: 'bottom 50%',
+          onToggle: (self) => {
+            if (!dot) return;
+            dot.classList.toggle('!bg-white', self.isActive);
+            (dot as HTMLElement).style.transform = self.isActive ? 'scale(2)' : '';
+          },
+        });
+      });
+
+      // Booking section reveal
+      gsap.to('#booking .reveal', {
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        ease: 'power3.out',
+        stagger: 0.1,
+        scrollTrigger: { trigger: '#booking', start: 'top 70%' },
+      });
+
+      // ---- Scroll progress bar ----
+      gsap.to('#progress', {
+        scaleX: 1,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: document.body,
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: true,
+        },
+      });
+
+      // Recalculate once fonts/layout settle
+      requestAnimationFrame(() => ScrollTrigger.refresh());
+      window.addEventListener('load', () => ScrollTrigger.refresh());
+    }
+  </script>
+</BaseLayout>

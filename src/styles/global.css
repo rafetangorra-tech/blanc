@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ *
+   blanc — global styles
+   Fonts are imported in BaseLayout.astro (Fontsource).
+ * ------------------------------------------------------------------ */
+
+:root {
+  --font-sans: "Inter Variable", system-ui, -apple-system, sans-serif;
+  --font-house: "Space Grotesk Variable", var(--font-sans);
+  --font-golden: "Fraunces Variable", Georgia, "Times New Roman", serif;
+  --font-velvet: "Anton", "Inter Variable", sans-serif;
+
+  --canvas: #f7f6f4; /* the blank page */
+  --canvas-ink: #0a0a0a;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* Lenis drives scrolling; native smooth-scroll would fight it. */
+  scroll-behavior: auto;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--canvas);
+  color: var(--canvas-ink);
+  overflow-x: hidden;
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* World font helpers */
+.font-house {
+  font-family: var(--font-house);
+}
+.font-golden {
+  font-family: var(--font-golden);
+}
+.font-velvet {
+  font-family: var(--font-velvet);
+  letter-spacing: 0.01em;
+}
+
+/* ---- Reveal system ----
+   No-JS / reduced-motion: everything is visible by default.
+   Only once <html> has the `.js` class (added by the scroll engine)
+   do we hide `.reveal` elements so GSAP can animate them in. */
+.js .reveal {
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+/* Scroll cue */
+@keyframes cue {
+  0% { transform: translateY(0); opacity: 0.2; }
+  50% { opacity: 1; }
+  100% { transform: translateY(10px); opacity: 0.2; }
+}
+.scroll-cue span {
+  animation: cue 1.8s ease-in-out infinite;
+}
+
+/* Hide scrollbars but keep scrollability */
+.no-bar {
+  scrollbar-width: none;
+}
+.no-bar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Respect reduced motion: kill decorative animation, show content */
+@media (prefers-reduced-motion: reduce) {
+  .js .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .scroll-cue span {
+    animation: none;
+  }
+}
