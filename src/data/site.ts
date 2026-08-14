@@ -59,7 +59,11 @@ In blanc, Rafe is the studio brain — the producer and multi-instrumentalist wh
 Ask what he’s after and the answer is simple: it has to make you move. High-energy on stage and relentless behind the console, Rafe builds records with one job — to hit you in the body before you’ve had time to think.`,
     photo: 'members/rafe-tangorra.jpg',
     bgPhoto: 'members/rafe-live.jpg',
-    gallery: ['members/rafe-drums.jpg', 'members/rafe-studio.jpg'],
+    gallery: [
+      'members/rafe-drums.jpg',
+      'members/rafe-guitar.jpg',
+      'members/rafe-studio.jpg',
+    ],
   },
   {
     slug: 'nick-tangorra',

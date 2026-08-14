@@ -56,7 +56,7 @@ const BASE = '#0a0a0c';
         </div>
       </div>
 
-      <div class="relative z-10 mx-auto grid w-full max-w-6xl gap-12 lg:grid-cols-[1fr_0.8fr] lg:items-center">
+      <div class="relative z-10 mx-auto grid w-full max-w-6xl gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
         <div>
           <p
             class="reveal text-xs uppercase tracking-[0.35em]"
@@ -88,15 +88,22 @@ const BASE = '#0a0a0c';
           }
         </div>
 
-        <!-- portrait -->
-        <div class="reveal">
+        <!-- portrait — large centerpiece, shown full -->
+        <div class="reveal relative">
           {
             member.photo ? (
-              <img
-                src={withBase(`/${member.photo}`)}
-                alt={member.name}
-                class="aspect-[4/5] w-full rounded-2xl object-cover object-[center_20%] shadow-2xl ring-1 ring-white/10"
-              />
+              <Fragment>
+                <div
+                  class="pointer-events-none absolute -inset-8 -z-10 rounded-[40%] opacity-25 blur-3xl"
+                  style={`background:radial-gradient(circle, ${member.accent}, transparent 70%);`}
+                  aria-hidden="true"
+                />
+                <img
+                  src={withBase(`/${member.photo}`)}
+                  alt={member.name}
+                  class="w-full rounded-2xl shadow-2xl ring-1 ring-white/10"
+                />
+              </Fragment>
             ) : (
               <div
                 class="flex aspect-[4/5] w-full items-center justify-center rounded-2xl ring-1"
