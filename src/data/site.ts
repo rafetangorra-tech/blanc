@@ -150,8 +150,20 @@ export type Track = {
 //   Released  → set released:true and give it an `embed` (opens a player) + `artwork`.
 //   Unreleased→ leave released:false; it shows as a "coming soon" tile (artwork optional).
 export const tracks: Track[] = [
-  { title: 'Untitled Pulse', world: 'house', released: false },
-  { title: 'Nightdrive', world: 'house', released: false },
+  {
+    title: 'What You Doin?',
+    world: 'house',
+    released: true,
+    embed: 'https://open.spotify.com/embed/track/1InUwMZAvg7kx7spgVKkvD',
+    // artwork: 'tracks/what-you-doin.jpg', // ← drop the cover art here when you have it
+  },
+  {
+    title: 'Make That Sweat Drip',
+    world: 'house',
+    released: true,
+    embed: 'https://open.spotify.com/embed/track/2fY4mz3HzN4zgq49Pzx7Et',
+    // artwork: 'tracks/make-that-sweat-drip.jpg', // ← drop the cover art here when you have it
+  },
   {
     title: 'Curve in My Spine',
     world: 'golden',
