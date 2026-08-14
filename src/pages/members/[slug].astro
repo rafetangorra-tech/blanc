@@ -1,0 +1,180 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { members, worlds, initials, site } from '../../data/site';
+import { withBase } from '../../lib/url';
+
+export function getStaticPaths() {
+  return members.map((member) => ({
+    params: { slug: member.slug },
+    props: { member },
+  }));
+}
+
+const { member } = Astro.props;
+const homeHref = withBase('/');
+const memberWorlds = worlds.filter((w) => member.worlds.includes(w.id));
+---
+
+<BaseLayout
+  title={`${member.name} — blanc`}
+  description={`${member.name} — ${member.role}. Part of blanc, a songwriting collective.`}
+>
+  <!-- minimal nav -->
+  <header
+    class="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-5 py-4 text-white mix-blend-difference sm:px-8"
+  >
+    <a href={homeHref} class="text-sm uppercase tracking-[0.2em]">← blanc</a>
+    <a
+      href={`${homeHref}#booking`}
+      class="rounded-full border border-white/50 px-4 py-1.5 text-xs uppercase tracking-[0.2em] transition-colors hover:bg-white hover:text-black"
+      >Booking</a
+    >
+  </header>
+
+  <main
+    class="relative min-h-screen"
+    style="background: var(--canvas); color: var(--canvas-ink);"
+  >
+    <!-- accent glow -->
+    <div
+      class="pointer-events-none absolute inset-x-0 top-0 h-[70vh]"
+      aria-hidden="true"
+      style={`background: radial-gradient(60% 50% at 75% 20%, ${member.accent}22, transparent 70%);`}
+    >
+    </div>
+
+    <section
+      class="relative mx-auto grid max-w-6xl gap-12 px-6 pb-24 pt-32 sm:px-10 lg:grid-cols-[1fr_0.8fr] lg:items-center lg:pt-40"
+    >
+      <div>
+        <p
+          class="reveal text-xs uppercase tracking-[0.35em]"
+          style={`color:${member.accent}`}
+        >
+          blanc — the collective
+        </p>
+        <h1
+          class="reveal mt-4 text-6xl font-semibold leading-[0.95] tracking-tight sm:text-7xl lg:text-8xl"
+        >
+          {member.name}
+        </h1>
+        <p class="reveal mt-4 text-lg text-black/50">{member.role}</p>
+
+        {
+          memberWorlds.length > 0 && (
+            <div class="reveal mt-6 flex flex-wrap gap-2">
+              {memberWorlds.map((w) => (
+                <a
+                  href={`${homeHref}#${w.id}`}
+                  class="rounded-full border px-3 py-1 text-xs uppercase tracking-[0.15em] transition-colors"
+                  style={`border-color:${w.accent}55; color:${w.accent};`}
+                >
+                  {w.name}
+                </a>
+              ))}
+            </div>
+          )
+        }
+
+        <p class="reveal mt-8 max-w-xl text-lg leading-relaxed text-black/70">
+          {member.bio}
+        </p>
+
+        {
+          member.links && member.links.length > 0 && (
+            <div class="reveal mt-8 flex flex-wrap gap-4">
+              {member.links.map((l) => (
+                <a
+                  href={l.href}
+                  class="text-sm uppercase tracking-[0.15em] underline-offset-4 hover:underline"
+                >
+                  {l.label} ↗
+                </a>
+              ))}
+            </div>
+          )
+        }
+      </div>
+
+      <!-- portrait -->
+      <div class="reveal">
+        {
+          member.photo ? (
+            <img
+              src={withBase(`/${member.photo}`)}
+              alt={member.name}
+              class="aspect-[4/5] w-full rounded-2xl object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <div
+              class="flex aspect-[4/5] w-full items-center justify-center rounded-2xl border"
+              style={`border-color:${member.accent}40; background:${member.accent}0d; color:${member.accent};`}
+            >
+              <span class="font-golden text-8xl">{initials(member.name)}</span>
+            </div>
+          )
+        }
+      </div>
+    </section>
+
+    <!-- other members -->
+    <section class="mx-auto max-w-6xl px-6 pb-28 sm:px-10">
+      <p class="text-xs uppercase tracking-[0.35em] text-black/40">
+        more of blanc
+      </p>
+      <div class="mt-6 flex flex-wrap gap-x-8 gap-y-3">
+        {
+          members
+            .filter((m) => m.slug !== member.slug)
+            .map((m) => (
+              <a
+                href={withBase(`/members/${m.slug}`)}
+                class="group text-3xl font-semibold tracking-tight text-black/30 transition-colors hover:text-black sm:text-4xl"
+              >
+                {m.name}
+                <span class="opacity-0 transition-opacity group-hover:opacity-100">
+                  {' '}
+                  ↗
+                </span>
+              </a>
+            ))
+        }
+      </div>
+    </section>
+
+    <footer
+      class="flex flex-col items-center justify-between gap-3 border-t border-black/10 px-6 py-8 text-xs text-black/40 sm:flex-row"
+    >
+      <a href={homeHref} class="lowercase tracking-[0.2em]">blanc</a>
+      <span>© {new Date().getFullYear()} blanc — one group. many worlds.</span>
+    </footer>
+  </main>
+
+  <script>
+    import gsap from 'gsap';
+    import Lenis from 'lenis';
+
+    document.documentElement.classList.add('js');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (!reduced) {
+      const lenis = new Lenis({ lerp: 0.1 });
+      const raf = (t: number) => {
+        lenis.raf(t);
+        requestAnimationFrame(raf);
+      };
+      requestAnimationFrame(raf);
+
+      gsap.set('.reveal', { y: 28 });
+      gsap.to('.reveal', {
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        ease: 'power3.out',
+        stagger: 0.08,
+        delay: 0.15,
+      });
+    }
+  </script>
+</BaseLayout>

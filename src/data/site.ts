@@ -31,6 +31,57 @@ export type World = {
   track?: string; // display name of a signature track (placeholder ok)
 };
 
+export type Member = {
+  slug: string;
+  name: string;
+  role: string; // e.g. 'vocals · production' — placeholder ok
+  // worlds this member drives (ids from `worlds`): shapes their accent + tags
+  worlds: string[];
+  accent: string; // page accent; falls back to canvas ink if you like
+  bio: string; // short bio — placeholder ok, rewrite in the group's voice
+  photo?: string; // path under /public, e.g. 'members/rafe.jpg' — omit for initials placeholder
+  links?: { label: string; href: string }[];
+};
+
+export const members: Member[] = [
+  {
+    slug: 'rafe-tangorra',
+    name: 'Rafe Tangorra',
+    role: 'songwriter · TODO instrument/role',
+    worlds: ['house', 'velvet'],
+    accent: '#00E5FF',
+    bio: 'PLACEHOLDER — Rafe writes across blanc’s worlds. Add the real story here: how he started, what he brings to the group, the sound he chases.',
+    // photo: 'members/rafe-tangorra.jpg',
+  },
+  {
+    slug: 'nick-tangorra',
+    name: 'Nick Tangorra',
+    role: 'songwriter · TODO instrument/role',
+    worlds: ['golden'],
+    accent: '#C7761F',
+    bio: 'PLACEHOLDER — Nick’s bio goes here. What he plays, what he writes, the world he lives in most.',
+    // photo: 'members/nick-tangorra.jpg',
+  },
+  {
+    slug: 'jacqueline-tangorra',
+    name: 'Jacqueline Tangorra',
+    role: 'songwriter · TODO instrument/role',
+    worlds: ['velvet', 'golden'],
+    accent: '#E23A55',
+    bio: 'PLACEHOLDER — Jacqueline’s bio goes here. Her voice in the collective and the sound she’s known for.',
+    // photo: 'members/jacqueline-tangorra.jpg',
+  },
+];
+
+export function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
+
 export const worlds: World[] = [
   {
     id: 'house',
