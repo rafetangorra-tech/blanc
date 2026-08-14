@@ -176,7 +176,7 @@ export const tracks: Track[] = [
     world: 'golden',
     released: true,
     embed: 'https://open.spotify.com/embed/track/5Q19gH5CloNOuR9E8Ui2PZ',
-    // artwork: 'tracks/lose-u.jpg', // ← drop the cover art here when you have it
+    artwork: 'tracks/lose-u.jpg',
   },
   {
     title: 'Beautiful Woman',
