@@ -13,6 +13,14 @@ export function getStaticPaths() {
 const { world } = Astro.props;
 const homeHref = withBase('/');
 const worldTracks = tracks.filter((t) => t.world === world.id);
+
+// Faded collage background — a mosaic of every album cover across blanc.
+const allCovers = tracks
+  .filter((t) => t.artwork)
+  .map((t) => t.artwork as string);
+const collageCovers = allCovers.length
+  ? Array.from({ length: 80 }, (_, i) => allCovers[i % allCovers.length])
+  : [];
 ---
 
 <BaseLayout
@@ -31,19 +39,23 @@ const worldTracks = tracks.filter((t) => t.world === world.id);
     >
   </header>
 
-  <main
-    class="relative overflow-hidden"
-    style={`background:${world.bg}; color:${world.ink};`}
-  >
-    <!-- ambient glow -->
+  <main class="relative" style={`color:${world.ink};`}>
+    <!-- faded album-art collage background -->
+    <div class="collage-bg" aria-hidden="true">
+      {collageCovers.map((src) => <img src={withBase(`/${src}`)} alt="" loading="lazy" />)}
+    </div>
     <div
-      class="pointer-events-none absolute inset-x-0 top-0 h-[80vh]"
+      class="collage-tint"
       aria-hidden="true"
-      style={`background: radial-gradient(60% 55% at 75% 20%, ${world.accent}22, transparent 70%), radial-gradient(45% 45% at 15% 90%, ${world.accent2}1c, transparent 70%);`}
+      style={`background:
+        linear-gradient(${world.bg}e0, ${world.bg}ee 55%, ${world.bg}f7),
+        radial-gradient(60% 55% at 75% 18%, ${world.accent}26, transparent 70%),
+        radial-gradient(45% 45% at 12% 92%, ${world.accent2}1f, transparent 70%);`}
     >
     </div>
 
-    <!-- ============ HERO ============ -->
+    <div class="relative z-10">
+      <!-- ============ HERO ============ -->
     <section
       class="relative mx-auto grid min-h-[85vh] max-w-6xl items-center gap-12 px-6 pb-16 pt-32 sm:px-10 lg:grid-cols-[1fr_0.8fr] lg:pt-40"
     >
@@ -217,6 +229,7 @@ const worldTracks = tracks.filter((t) => t.world === world.id);
       <a href={homeHref} class="lowercase tracking-[0.2em]">blanc</a>
       <span>© {new Date().getFullYear()} blanc — one group. many worlds.</span>
     </footer>
+    </div>
   </main>
 
   <!-- ============ LIGHTBOX (streaming embed) ============ -->
