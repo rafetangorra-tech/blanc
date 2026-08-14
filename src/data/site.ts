@@ -185,6 +185,24 @@ export const tracks: Track[] = [
     embed: 'https://open.spotify.com/embed/track/5toQlg206Si08Q0T1hyQb5',
     // artwork: 'tracks/beautiful-woman.jpg', // ← drop the cover art here when you have it
   },
+  {
+    title: 'I Hate Your Friends',
+    world: 'golden',
+    released: false,
+    artwork: 'tracks/i-hate-your-friends.jpg',
+  },
+  {
+    title: 'Smoke Rises',
+    world: 'golden',
+    released: false,
+    artwork: 'tracks/smoke-rises.jpg',
+  },
+  {
+    title: 'Wild Eyes',
+    world: 'golden',
+    released: false,
+    artwork: 'tracks/wild-eyes.jpg',
+  },
   { title: 'Crimson', world: 'velvet', released: false },
   { title: 'Velvet Rope', world: 'velvet', released: false },
 ];
