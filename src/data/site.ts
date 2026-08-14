@@ -212,4 +212,10 @@ export const tracks: Track[] = [
     released: false,
     artwork: 'tracks/egypt.jpg',
   },
+  {
+    title: 'Free',
+    world: 'velvet',
+    released: false,
+    artwork: 'tracks/free.jpg',
+  },
 ];
