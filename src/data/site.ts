@@ -50,7 +50,11 @@ export const members: Member[] = [
     role: 'producer · multi-instrumentalist',
     worlds: ['house', 'velvet'],
     accent: '#00E5FF',
-    bio: 'PLACEHOLDER — Rafe is blanc’s producer and multi-instrumentalist, the one building the worlds under the songs. Add the real story here: how he started, what he plays, the sound he chases.',
+    bio: `Rafe Tangorra didn’t learn music in a classroom — he learned it on stages. On Long Island, he taught himself drums, then guitar, then bass, then keys, playing night after night and band after band until he could hear an entire record in his head and go build it himself. Years on the live circuit and a run of earlier projects sharpened the instinct that defines him now: whatever the song needs, he can play it.
+
+In blanc, Rafe is the studio brain — the producer and multi-instrumentalist who builds the worlds the group’s songs live in. Raised on rock and roots but hooked on the craft of a great pop song, he refuses to pick a lane. A track usually starts with a riff that won’t leave him alone or a production idea he has to chase, then grows into something that doesn’t sound quite like anyone else. He’s the one who carries a song from a spark to a finished record.
+
+Ask what he’s after and the answer is simple: it has to make you move. High-energy on stage and relentless behind the console, Rafe builds records with one job — to hit you in the body before you’ve had time to think.`,
     photo: 'members/rafe-tangorra.jpg',
   },
   {

@@ -76,9 +76,9 @@ const memberWorlds = worlds.filter((w) => member.worlds.includes(w.id));
           )
         }
 
-        <p class="reveal mt-8 max-w-xl text-lg leading-relaxed text-black/70">
-          {member.bio}
-        </p>
+        <div class="mt-8 max-w-xl space-y-4 text-lg leading-relaxed text-black/70">
+          {member.bio.split('\n\n').map((para) => <p class="reveal">{para}</p>)}
+        </div>
 
         {
           member.links && member.links.length > 0 && (
