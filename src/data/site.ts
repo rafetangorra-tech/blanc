@@ -106,6 +106,7 @@ export const worlds: World[] = [
     accent: '#00E5FF',
     accent2: '#FF2D95',
     font: 'house',
+    planet: 'worlds/house.jpg',
   },
   {
     id: 'golden',
@@ -120,6 +121,7 @@ export const worlds: World[] = [
     accent: '#C7761F',
     accent2: '#E8A93C',
     font: 'golden',
+    planet: 'worlds/golden.jpg',
   },
   {
     id: 'velvet',
@@ -134,6 +136,7 @@ export const worlds: World[] = [
     accent: '#E23A55',
     accent2: '#7A1020',
     font: 'velvet',
+    planet: 'worlds/velvet.jpg',
   },
 ];
 

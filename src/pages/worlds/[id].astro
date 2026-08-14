@@ -67,23 +67,31 @@ const worldTracks = tracks.filter((t) => t.world === world.id);
         </p>
       </div>
 
-      <!-- planet (placeholder until the Higgsfield render lands) -->
+      <!-- planet -->
       <div class="reveal flex justify-center lg:justify-end">
-        {
-          world.planet ? (
-            <img
-              src={withBase(`/${world.planet}`)}
-              alt={`${world.name} planet`}
-              class="aspect-square w-64 max-w-full object-contain sm:w-80 lg:w-full"
-            />
-          ) : (
-            <div
-              class="aspect-square w-56 rounded-full sm:w-72 lg:w-80"
-              style={`background: radial-gradient(circle at 35% 30%, ${world.accent}, ${world.accent2} 55%, ${world.bg} 100%); box-shadow: 0 0 120px ${world.accent}40, inset -20px -20px 80px rgba(0,0,0,0.6);`}
-              aria-hidden="true"
-            />
-          )
-        }
+        <div class="relative aspect-square w-64 max-w-full sm:w-80 lg:w-[26rem]">
+          <div
+            class="pointer-events-none absolute inset-[6%] rounded-full opacity-50 blur-3xl"
+            style={`background: radial-gradient(circle, ${world.accent}, transparent 68%);`}
+            aria-hidden="true"
+          >
+          </div>
+          {
+            world.planet ? (
+              <img
+                src={withBase(`/${world.planet}`)}
+                alt={`${world.name} planet`}
+                class="planet relative h-full w-full object-contain"
+              />
+            ) : (
+              <div
+                class="relative h-full w-full rounded-full"
+                style={`background: radial-gradient(circle at 35% 30%, ${world.accent}, ${world.accent2} 55%, ${world.bg} 100%); box-shadow: inset -20px -20px 80px rgba(0,0,0,0.6);`}
+                aria-hidden="true"
+              />
+            )
+          }
+        </div>
       </div>
     </section>
 

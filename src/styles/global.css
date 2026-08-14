@@ -79,6 +79,17 @@ html.lenis body {
   animation: cue 1.8s ease-in-out infinite;
 }
 
+/* Planet renders — mask the black square into a clean disc + gentle float */
+.planet {
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 47%, transparent 50%);
+  mask-image: radial-gradient(circle at 50% 50%, #000 47%, transparent 50%);
+  animation: float 9s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+
 /* Hide scrollbars but keep scrollability */
 .no-bar {
   scrollbar-width: none;
@@ -94,6 +105,9 @@ html.lenis body {
     transform: none !important;
   }
   .scroll-cue span {
+    animation: none;
+  }
+  .planet {
     animation: none;
   }
 }
