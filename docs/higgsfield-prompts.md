@@ -14,23 +14,30 @@ three **worlds as planets** that scroll into the world sections.
 - Append the **shared style suffix** (below) to each planet prompt.
 - **Avoid / negative:** text, letters, numbers, watermark, UI, logos, borders, split frames.
 
-### Shared style suffix (paste at the end of each planet prompt)
+### Shared style suffix — v2, grittier (paste at the end of each planet prompt)
 
 > — a single full planet centered in frame with generous margin, isolated on a pure black
-> background with a few subtle distant stars, photorealistic 3D render, cinematic volumetric
-> lighting, ultra-detailed surface, octane/redshift quality, 8k, square 1:1 composition,
-> no text, no watermark, no border.
+> background with a few sparse distant stars, hyper-photorealistic, shot like a real NASA /
+> Hubble deep-space telescope photograph, cinematic volumetric lighting with deep shadows,
+> fine weathered surface grit and texture, subtle film grain, 8k, square 1:1 composition,
+> **no circuit-board patterns, no neon piping, no glossy plastic CGI look**, no text, no
+> watermark, no border.
+
+**Lesson from v1:** words like "circuit boards," "grids," and "neon light-lines" make the model
+draw literal graphics on the sphere. Describe energy as **lightning, molten veins, aurora, and
+storms** instead — that stays photoreal and gritty. (Velvet's lava world nailed this; House v1 did not.)
 
 ---
 
-## 1) House World — the electronic planet
+## 1) House World — the electric storm planet (v2, grittier)
 
-> A photorealistic 3D planet floating in deep space, seen full and centered. A sleek electric
-> world: glossy dark-indigo surface veined with glowing **cyan (#00E5FF)** and **magenta
-> (#FF2D95)** neon light-lines that trace across it like circuit boards and pulsing equalizer
-> grids. Luminous cyan cloud-bands swirl over the surface; a thin magenta atmospheric rim-light
-> glows along the edge. Tiny shimmering city-lights speckle the night side. Futuristic, nocturnal,
-> high-energy, cinematic, volumetric glow.
+> A hyper-photorealistic planet floating in deep space, seen full and centered — a real, gritty
+> celestial body, NOT a graphic. A dark electric storm world: a charred blue-black rocky surface
+> wrapped in turbulent storm clouds, split by glowing veins of molten **cyan (#00E5FF)** energy
+> cracking through the crust (like the Velvet planet's lava, but electric blue). Vast forks of
+> cyan lightning crackle across the shadowed night side; faint **magenta (#FF2D95)** aurora
+> ribbons drift over the poles, and a thin magenta atmospheric rim-light glows on the edge.
+> Weathered, cratered, high-detail surface, deep shadows, moody and cinematic.
 
 ## 2) Golden World — the singer-songwriter planet
 
