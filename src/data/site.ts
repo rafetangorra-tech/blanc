@@ -206,6 +206,10 @@ export const tracks: Track[] = [
     released: false,
     artwork: 'tracks/wild-eyes.jpg',
   },
-  { title: 'Crimson', world: 'velvet', released: false },
-  { title: 'Velvet Rope', world: 'velvet', released: false },
+  {
+    title: 'Egypt',
+    world: 'velvet',
+    released: false,
+    artwork: 'tracks/egypt.jpg',
+  },
 ];
