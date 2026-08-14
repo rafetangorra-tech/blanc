@@ -153,11 +153,18 @@ export const tracks: Track[] = [
   { title: 'Untitled Pulse', world: 'house', released: false },
   { title: 'Nightdrive', world: 'house', released: false },
   {
-    title: 'Curve In My Spine',
+    title: 'Curve in My Spine',
     world: 'golden',
     released: true,
     artwork: 'tracks/curve-in-my-spine.jpg',
-    // embed: 'https://open.spotify.com/embed/track/XXXXXXXX', // ← paste the Spotify share link to make it playable
+    embed: 'https://open.spotify.com/embed/track/2Mwwkc4ikeMA0yazY1jMU0',
+  },
+  {
+    title: 'Lose U',
+    world: 'golden',
+    released: true,
+    embed: 'https://open.spotify.com/embed/track/5Q19gH5CloNOuR9E8Ui2PZ',
+    // artwork: 'tracks/lose-u.jpg', // ← drop the cover art here when you have it
   },
   { title: 'Crimson', world: 'velvet', released: false },
   { title: 'Velvet Rope', world: 'velvet', released: false },
