@@ -26,9 +26,7 @@ export type World = {
   accent: string;
   accent2: string;
   font: 'house' | 'golden' | 'velvet';
-  // optional embed — drop a Spotify / SoundCloud / YouTube embed URL here later
-  embed?: string;
-  track?: string; // display name of a signature track (placeholder ok)
+  planet?: string; // path under /public for the world's planet image (Higgsfield render)
 };
 
 export type Member = {
@@ -108,8 +106,6 @@ export const worlds: World[] = [
     accent: '#00E5FF',
     accent2: '#FF2D95',
     font: 'house',
-    embed: '',
-    track: 'Untitled Pulse',
   },
   {
     id: 'golden',
@@ -124,8 +120,6 @@ export const worlds: World[] = [
     accent: '#C7761F',
     accent2: '#E8A93C',
     font: 'golden',
-    embed: '',
-    track: 'Golden Hour',
   },
   {
     id: 'velvet',
@@ -140,7 +134,26 @@ export const worlds: World[] = [
     accent: '#E23A55',
     accent2: '#7A1020',
     font: 'velvet',
-    embed: '',
-    track: 'Crimson',
   },
+];
+
+export type Track = {
+  title: string;
+  world: string; // world id from `worlds`
+  released: boolean;
+  artwork?: string; // path under /public, e.g. 'tracks/crimson.jpg' (square cover art)
+  embed?: string; // streaming EMBED url for released tracks (Spotify / YouTube / SoundCloud)
+  link?: string; // optional external "listen" link
+};
+
+// Add tracks here as you upload artwork + links.
+//   Released  → set released:true and give it an `embed` (opens a player) + `artwork`.
+//   Unreleased→ leave released:false; it shows as a "coming soon" tile (artwork optional).
+export const tracks: Track[] = [
+  { title: 'Untitled Pulse', world: 'house', released: false },
+  { title: 'Nightdrive', world: 'house', released: false },
+  { title: 'Golden Hour', world: 'golden', released: false },
+  { title: 'Paper Letters', world: 'golden', released: false },
+  { title: 'Crimson', world: 'velvet', released: false },
+  { title: 'Velvet Rope', world: 'velvet', released: false },
 ];
