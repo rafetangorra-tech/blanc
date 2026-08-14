@@ -155,14 +155,14 @@ export const tracks: Track[] = [
     world: 'house',
     released: true,
     embed: 'https://open.spotify.com/embed/track/1InUwMZAvg7kx7spgVKkvD',
-    // artwork: 'tracks/what-you-doin.jpg', // ← drop the cover art here when you have it
+    artwork: 'tracks/what-you-doin.jpg',
   },
   {
     title: 'Make That Sweat Drip',
     world: 'house',
     released: true,
     embed: 'https://open.spotify.com/embed/track/2fY4mz3HzN4zgq49Pzx7Et',
-    // artwork: 'tracks/make-that-sweat-drip.jpg', // ← drop the cover art here when you have it
+    artwork: 'tracks/make-that-sweat-drip.jpg',
   },
   {
     title: 'Curve in My Spine',
@@ -183,7 +183,7 @@ export const tracks: Track[] = [
     world: 'golden',
     released: true,
     embed: 'https://open.spotify.com/embed/track/5toQlg206Si08Q0T1hyQb5',
-    // artwork: 'tracks/beautiful-woman.jpg', // ← drop the cover art here when you have it
+    artwork: 'tracks/beautiful-woman.jpg',
   },
   {
     title: 'I Hate Your Friends',
