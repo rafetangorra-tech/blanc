@@ -152,8 +152,13 @@ export type Track = {
 export const tracks: Track[] = [
   { title: 'Untitled Pulse', world: 'house', released: false },
   { title: 'Nightdrive', world: 'house', released: false },
-  { title: 'Golden Hour', world: 'golden', released: false },
-  { title: 'Paper Letters', world: 'golden', released: false },
+  {
+    title: 'Curve In My Spine',
+    world: 'golden',
+    released: true,
+    artwork: 'tracks/curve-in-my-spine.jpg',
+    // embed: 'https://open.spotify.com/embed/track/XXXXXXXX', // ← paste the Spotify share link to make it playable
+  },
   { title: 'Crimson', world: 'velvet', released: false },
   { title: 'Velvet Rope', world: 'velvet', released: false },
 ];
