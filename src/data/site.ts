@@ -47,11 +47,11 @@ export const members: Member[] = [
   {
     slug: 'rafe-tangorra',
     name: 'Rafe Tangorra',
-    role: 'songwriter · TODO instrument/role',
+    role: 'producer · multi-instrumentalist',
     worlds: ['house', 'velvet'],
     accent: '#00E5FF',
-    bio: 'PLACEHOLDER — Rafe writes across blanc’s worlds. Add the real story here: how he started, what he brings to the group, the sound he chases.',
-    // photo: 'members/rafe-tangorra.jpg',
+    bio: 'PLACEHOLDER — Rafe is blanc’s producer and multi-instrumentalist, the one building the worlds under the songs. Add the real story here: how he started, what he plays, the sound he chases.',
+    photo: 'members/rafe-tangorra.jpg',
   },
   {
     slug: 'nick-tangorra',
