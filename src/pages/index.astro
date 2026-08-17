@@ -1,9 +1,15 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { site, worlds, members, initials } from '../data/site';
+import { site, worlds, members, initials, tracks } from '../data/site';
 import { withBase } from '../lib/url';
 
 const year = new Date().getFullYear();
+
+// Faded album-art collage — a mosaic of every cover, shown behind each world.
+const allCovers = tracks.filter((t) => t.artwork).map((t) => t.artwork as string);
+const collageCovers = allCovers.length
+  ? Array.from({ length: 60 }, (_, i) => allCovers[i % allCovers.length])
+  : [];
 ---
 
 <BaseLayout>
@@ -88,11 +94,18 @@ const year = new Date().getFullYear();
           data-accent={w.accent}
           style={`background:${w.bg}; color:${w.ink};`}
         >
-          {/* decorative glow */}
+          {/* faded album-art collage */}
+          <div class="collage-section" aria-hidden="true">
+            {collageCovers.map((src) => <img src={withBase(`/${src}`)} alt="" loading="lazy" />)}
+          </div>
+          {/* tint + glow */}
           <div
             class="pointer-events-none absolute inset-0"
             aria-hidden="true"
-            style={`background: radial-gradient(60% 60% at 70% 30%, ${w.accent}22, transparent 70%), radial-gradient(50% 50% at 20% 80%, ${w.accent2}1f, transparent 70%);`}
+            style={`background:
+              linear-gradient(${w.bg}e0, ${w.bg}ee 55%, ${w.bg}f7),
+              radial-gradient(60% 60% at 72% 28%, ${w.accent}26, transparent 70%),
+              radial-gradient(50% 50% at 18% 82%, ${w.accent2}1f, transparent 70%);`}
           />
           <div class="relative z-10 mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[1.2fr_1fr] lg:items-center">
             <div>
