@@ -65,11 +65,19 @@ const collageCovers = allCovers.length
         >
           songwriting collective
         </p>
-        <h1
-          id="wordmark"
-          class="text-[18vw] leading-none sm:text-[14vw] lg:text-[12rem]"
-        >
-          blanc
+        <h1 id="wordmark" class="relative">
+          <span class="block text-[18vw] leading-none sm:text-[14vw] lg:text-[12rem]"
+            >blanc</span
+          >
+          <!-- material-transformation wordmark: scroll pours the worlds onto the letters -->
+          <video
+            id="wordmark-video"
+            class="absolute left-1/2 top-1/2 hidden aspect-video w-[115vw] max-w-none -translate-x-1/2 -translate-y-1/2"
+            muted
+            playsinline
+            preload="auto"
+            data-src={withBase('/blanc-transform.mp4')}
+          />
         </h1>
         <p
           class="reveal mx-auto mt-6 max-w-xl text-lg text-black/60 sm:text-xl"
@@ -369,8 +377,9 @@ const collageCovers = allCovers.length
         .timeline({ defaults: { ease: 'power3.out' } })
         .to('#intro .reveal', { opacity: 1, y: 0, duration: 1, stagger: 0.15 }, 0.2);
 
-      // Wordmark spreads + fades as you leave the blank page
-      gsap.to('#wordmark', {
+      // Wordmark text spreads + fades as you leave the blank page
+      // (targets the text span only, so it never dims the transform video)
+      gsap.to('#wordmark span', {
         letterSpacing: '0.15em',
         opacity: 0.15,
         ease: 'none',
@@ -381,6 +390,36 @@ const collageCovers = allCovers.length
           scrub: true,
         },
       });
+
+      // ---- The blank page transforms: pin the intro and let scroll pour
+      // the three worlds' materials onto the BLANC letters. Backward strips
+      // them clean. Text wordmark stays until the video is truly ready.
+      const wmVideo = document.getElementById('wordmark-video') as HTMLVideoElement | null;
+      const wmText = document.querySelector<HTMLElement>('#wordmark span');
+      if (wmVideo?.dataset.src) {
+        wmVideo.src = wmVideo.dataset.src;
+        wmVideo.addEventListener('loadeddata', () => {
+          wmVideo.classList.remove('hidden');
+          if (wmText) wmText.style.visibility = 'hidden';
+          ScrollTrigger.create({
+            trigger: '#intro',
+            start: 'top top',
+            end: '+=160%',
+            pin: true,
+            scrub: true,
+            anticipatePin: 1,
+            onUpdate: (self) => {
+              if (wmVideo.readyState >= 2 && wmVideo.duration) {
+                wmVideo.currentTime = Math.min(
+                  wmVideo.duration - 0.05,
+                  self.progress * wmVideo.duration
+                );
+              }
+            },
+          });
+          ScrollTrigger.refresh();
+        });
+      }
 
       // ---- Per-world reveals, parallax, and nav sync ----
       gsap.utils.toArray('.world').forEach((section) => {
