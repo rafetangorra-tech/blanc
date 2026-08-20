@@ -111,17 +111,20 @@ const collageCovers = allCovers.length
             <div>
               <p
                 class="reveal mb-4 text-xs uppercase tracking-[0.35em]"
+                data-wtext="label"
                 style={`color:${w.accent}`}
               >
                 {w.index} — {w.genre}
               </p>
               <h2
                 class={`reveal font-${w.font} text-6xl leading-[0.95] sm:text-7xl lg:text-8xl`}
+                data-wtext="title"
               >
                 {w.name}
               </h2>
               <p
                 class="reveal mt-6 max-w-lg text-lg leading-relaxed"
+                data-wtext="blurb"
                 style={`color:${w.muted}`}
               >
                 {w.blurb}
@@ -163,7 +166,11 @@ const collageCovers = allCovers.length
                   </div>
                 </a>
               )}
-              <div class="reveal text-center lg:text-left" data-speed="0.6">
+              <div
+                class="reveal flex flex-col items-center"
+                data-wtext="cta"
+                data-speed="0.6"
+              >
                 <a
                   href={withBase(`/worlds/${w.id}`)}
                   class="group inline-flex items-center gap-3 rounded-full border px-7 py-4 text-sm font-medium uppercase tracking-[0.2em] transition-colors hover:bg-white/5"
@@ -176,7 +183,7 @@ const collageCovers = allCovers.length
                     >→</span
                   >
                 </a>
-                <p class="mt-3 text-sm" style={`color:${w.muted}`}>
+                <p class="mt-3 text-center text-sm" style={`color:${w.muted}`}>
                   explore the music &amp; artwork
                 </p>
               </div>
@@ -379,19 +386,7 @@ const collageCovers = allCovers.length
       gsap.utils.toArray('.world').forEach((section) => {
         const el = section as HTMLElement;
 
-        // staggered content reveal — reverses when you scroll back up
-        gsap.to(el.querySelectorAll('.reveal'), {
-          opacity: 1,
-          y: 0,
-          duration: 1,
-          ease: 'power3.out',
-          stagger: 0.1,
-          scrollTrigger: {
-            trigger: el,
-            start: 'top 68%',
-            toggleActions: 'play none none reverse',
-          },
-        });
+        // (world text is driven by the pinned mix-in timeline below, not here)
 
         // planet scrubs in with the scroll — grows/settles as the world arrives,
         // shrinks back as you leave. Fully tied to scroll position.
@@ -518,27 +513,53 @@ const collageCovers = allCovers.length
         lazyPlanets.forEach((v) => io.observe(v));
       }
 
-      // ---- ULTRA reactive: pin each world and let scroll drive the orb.
-      // One full spin per world — the scrollbar IS the playhead, both directions.
+      // ---- ULTRA reactive: pin each world; scroll drives BOTH the orb's spin
+      // and the mix-in of every text layer. Forward builds the mix, backward
+      // strips it — the scrollbar is the fader.
       gsap.utils.toArray<HTMLElement>('.world').forEach((el) => {
         const vid = el.querySelector<HTMLVideoElement>('video[data-scrub]');
-        if (!vid) return;
-        ScrollTrigger.create({
-          trigger: el,
-          start: 'top top',
-          end: '+=120%',
-          pin: true,
-          scrub: true,
-          anticipatePin: 1,
-          onUpdate: (self) => {
-            if (vid.readyState >= 2 && vid.duration) {
-              vid.currentTime = Math.min(
-                vid.duration - 0.05,
-                self.progress * vid.duration
-              );
-            }
+        const label = el.querySelector('[data-wtext="label"]');
+        const title = el.querySelector('[data-wtext="title"]');
+        const blurb = el.querySelector('[data-wtext="blurb"]');
+        const cta = el.querySelector('[data-wtext="cta"]');
+
+        const tl = gsap.timeline({
+          defaults: { ease: 'power2.out' },
+          scrollTrigger: {
+            trigger: el,
+            start: 'top top',
+            end: '+=140%',
+            pin: true,
+            scrub: 0.4,
+            anticipatePin: 1,
+            onUpdate: (self) => {
+              if (vid && vid.readyState >= 2 && vid.duration) {
+                vid.currentTime = Math.min(
+                  vid.duration - 0.05,
+                  self.progress * vid.duration
+                );
+              }
+            },
           },
         });
+
+        // The mix builds channel by channel across the first half of the pin;
+        // the orb keeps spinning through all of it.
+        if (label)
+          tl.fromTo(label, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.1 }, 0.02);
+        if (title)
+          tl.fromTo(
+            title,
+            { opacity: 0, y: 70, scale: 0.96 },
+            { opacity: 1, y: 0, scale: 1, duration: 0.18 },
+            0.07
+          );
+        if (blurb)
+          tl.fromTo(blurb, { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.14 }, 0.18);
+        if (cta)
+          tl.fromTo(cta, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.14 }, 0.28);
+        // spacer so the mix completes by ~45% and the rest of the pin is pure spin
+        tl.to({ v: 0 }, { v: 1, duration: 0.55, ease: 'none' }, 0.45);
       });
 
       // ---- Scroll progress bar ----
