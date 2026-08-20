@@ -140,6 +140,7 @@ export const worlds: World[] = [
     accent2: '#7A1020',
     font: 'velvet',
     planet: 'worlds/velvet-orb.jpg',
+    planetVideo: 'worlds/velvet-orb.mp4',
   },
 ];
 
