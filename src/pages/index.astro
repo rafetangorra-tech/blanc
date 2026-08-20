@@ -153,11 +153,11 @@ const collageCovers = allCovers.length
                       <video
                         class="planet-video lazy-planet"
                         muted
-                        loop
                         playsinline
                         preload="none"
                         poster={withBase(`/${w.planet}`)}
                         data-src={withBase(`/${w.planetVideo}`)}
+                        data-scrub
                       />
                     )}
                   </div>
@@ -207,10 +207,10 @@ const collageCovers = allCovers.length
           <img
             src={withBase('/members/blanc-group-wide.jpg')}
             alt="blanc — Nick Tangorra, Jacqueline Tangorra, and Rafe Tangorra"
-            class="absolute inset-0 h-full w-full object-cover object-[center_22%]"
+            class="absolute inset-0 h-full w-full scale-[1.15] object-cover object-[center_22%] origin-[50%_12%]"
           />
           <video
-            class="lazy-planet"
+            class="lazy-planet scale-[1.15] origin-[50%_12%]"
             style="object-position: center 22%"
             muted
             loop
@@ -224,14 +224,14 @@ const collageCovers = allCovers.length
 
       <!-- group portrait, contained square (portrait screens) -->
       <div class="reveal group-photo relative mx-auto mt-12 max-w-4xl px-6 md:hidden">
-        <div class="group-photo-media group-photo-fade relative">
+        <div class="group-photo-media group-photo-fade relative overflow-hidden">
           <img
             src={withBase('/members/blanc-group.jpg')}
             alt="blanc — Nick Tangorra, Jacqueline Tangorra, and Rafe Tangorra"
-            class="w-full"
+            class="w-full scale-[1.15] origin-[50%_15%]"
           />
           <video
-            class="lazy-planet"
+            class="lazy-planet scale-[1.15] origin-[50%_15%]"
             muted
             loop
             playsinline
@@ -492,25 +492,54 @@ const collageCovers = allCovers.length
         );
       });
 
-      // ---- Lazy living planets: load + play each video as its world approaches ----
+      // ---- Lazy living media: load as it approaches. Scrub videos never
+      // autoplay — the scrollbar is their playhead. Ambient videos loop.
       const lazyPlanets = document.querySelectorAll<HTMLVideoElement>('.lazy-planet');
       if (lazyPlanets.length) {
         const io = new IntersectionObserver(
           (entries) => {
             entries.forEach((entry) => {
               const v = entry.target as HTMLVideoElement;
+              const isScrub = v.dataset.scrub !== undefined;
               if (entry.isIntersecting) {
-                if (!v.src && v.dataset.src) v.src = v.dataset.src;
-                v.play().catch(() => {});
-              } else {
+                if (!v.src && v.dataset.src) {
+                  v.src = v.dataset.src;
+                  v.preload = 'auto';
+                  v.load();
+                }
+                if (!isScrub) v.play().catch(() => {});
+              } else if (!isScrub) {
                 v.pause();
               }
             });
           },
-          { rootMargin: '300px' }
+          { rootMargin: '600px' }
         );
         lazyPlanets.forEach((v) => io.observe(v));
       }
+
+      // ---- ULTRA reactive: pin each world and let scroll drive the orb.
+      // One full spin per world — the scrollbar IS the playhead, both directions.
+      gsap.utils.toArray<HTMLElement>('.world').forEach((el) => {
+        const vid = el.querySelector<HTMLVideoElement>('video[data-scrub]');
+        if (!vid) return;
+        ScrollTrigger.create({
+          trigger: el,
+          start: 'top top',
+          end: '+=120%',
+          pin: true,
+          scrub: true,
+          anticipatePin: 1,
+          onUpdate: (self) => {
+            if (vid.readyState >= 2 && vid.duration) {
+              vid.currentTime = Math.min(
+                vid.duration - 0.05,
+                self.progress * vid.duration
+              );
+            }
+          },
+        });
+      });
 
       // ---- Scroll progress bar ----
       gsap.to('#progress', {
