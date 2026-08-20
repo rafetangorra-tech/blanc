@@ -28,7 +28,10 @@ const homeHref = withBase('/');
     </p>
   </header>
 
-  <main class="studio relative flex min-h-screen flex-col overflow-hidden text-white">
+  <main
+    class="studio relative flex min-h-screen flex-col overflow-hidden"
+    style="color: var(--canvas-ink);"
+  >
     <!-- studio backdrop -->
     <div class="absolute inset-0" aria-hidden="true">
       <img
@@ -37,9 +40,21 @@ const homeHref = withBase('/');
         class="h-full w-full object-cover object-[center_30%]"
         onerror="this.style.display='none'"
       />
+      <!-- living studio: lamps breathe, rack LEDs blink, haze drifts -->
+      <video
+        class="studio-live absolute inset-0 h-full w-full object-cover object-[center_30%]"
+        autoplay
+        muted
+        loop
+        playsinline
+        poster={withBase('/produce-studio.jpg')}
+        onerror="this.remove()"
+      >
+        <source src={withBase('/produce-studio.mp4')} type="video/mp4" />
+      </video>
       <div
         class="absolute inset-0"
-        style="background: linear-gradient(to bottom, rgba(6,5,8,0.55), rgba(6,5,8,0.25) 30%, rgba(6,5,8,0.78) 62%, rgba(6,5,8,0.97) 78%);"
+        style="background: linear-gradient(to bottom, rgba(247,246,244,0.6), rgba(247,246,244,0.12) 30%, rgba(247,246,244,0.62) 60%, rgba(247,246,244,0.97) 78%);"
       >
       </div>
     </div>
@@ -47,9 +62,9 @@ const homeHref = withBase('/');
     <!-- title -->
     <div class="relative z-10 mx-auto mt-24 px-6 text-center">
       <h1 class="text-5xl lowercase sm:text-6xl">i produce</h1>
-      <p class="mt-3 text-sm text-white/60">
+      <p class="mt-3 text-sm text-black/60">
         You're behind the board. Six stems of
-        <span class="font-semibold text-white">Beautiful Woman</span> — ride the
+        <span class="font-semibold text-black">Beautiful Woman</span> — ride the
         faders, mute, solo. Make it yours.
       </p>
     </div>
@@ -68,15 +83,15 @@ const homeHref = withBase('/');
         <svg id="icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
         <svg id="icon-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="hidden"><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
       </button>
-      <span id="time" class="w-14 shrink-0 font-mono text-sm text-white/70">0:00</span>
-      <div id="seekbar" class="group relative h-2 flex-1 cursor-pointer rounded-full bg-white/15">
+      <span id="time" class="w-14 shrink-0 font-mono text-sm text-black/60">0:00</span>
+      <div id="seekbar" class="group relative h-2 flex-1 cursor-pointer rounded-full bg-black/15">
         <div id="seekfill" class="absolute inset-y-0 left-0 w-0 rounded-full" style="background: linear-gradient(90deg,#c7761f,#e8a93c);"></div>
-        <div id="seekhead" class="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-0 transition-opacity group-hover:opacity-100" style="left:0%"></div>
+        <div id="seekhead" class="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black opacity-0 transition-opacity group-hover:opacity-100" style="left:0%"></div>
       </div>
-      <span id="dur" class="w-14 shrink-0 text-right font-mono text-sm text-white/70">-:--</span>
+      <span id="dur" class="w-14 shrink-0 text-right font-mono text-sm text-black/60">-:--</span>
       <button
         id="resetmix"
-        class="shrink-0 rounded-full border border-white/25 px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-white/70 transition-colors hover:bg-white hover:text-black"
+        class="shrink-0 rounded-full border border-black/25 px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-black/70 transition-colors hover:bg-black hover:text-white"
         >Reset mix</button
       >
     </div>
@@ -86,15 +101,23 @@ const homeHref = withBase('/');
       <div class="console mx-auto max-w-5xl overflow-x-auto px-4 no-bar">
         <div class="console-body mx-auto flex min-w-[640px] justify-center gap-2 rounded-2xl p-4 sm:gap-3 sm:p-6">
           {
-            channels.map((ch) => (
+            channels.map((ch, i) => (
               <div class={`strip strip-${ch.world}`} data-ch={ch.id}>
-                <p class="ch-name">{ch.name}</p>
+                <p class="ch-num">CH {String(i + 1).padStart(2, '0')}</p>
                 <div class="meter" aria-hidden="true">
                   {Array.from({ length: 14 }).map(() => (
                     <span class="led" />
                   ))}
                 </div>
                 <div class="fader" data-fader>
+                  <div class="fader-scale" aria-hidden="true">
+                    <i>+6</i>
+                    <i>0</i>
+                    <i>10</i>
+                    <i>20</i>
+                    <i>40</i>
+                    <i>∞</i>
+                  </div>
                   <div class="fader-track" />
                   <div class="fader-cap" style="bottom: 72%" />
                 </div>
@@ -103,11 +126,12 @@ const homeHref = withBase('/');
                   <button class="chbtn mute" data-mute aria-label={`Mute ${ch.name}`}>M</button>
                   <button class="chbtn solo" data-solo aria-label={`Solo ${ch.name}`}>S</button>
                 </div>
+                <p class="scribble">{ch.name.toLowerCase()}</p>
               </div>
             ))
           }
         </div>
-        <p class="mt-3 text-center text-[10px] uppercase tracking-[0.35em] text-white/30">
+        <p class="mt-3 text-center text-[10px] uppercase tracking-[0.35em] text-black/35">
           blanc console · one group. many worlds.
         </p>
       </div>
@@ -116,14 +140,15 @@ const homeHref = withBase('/');
     <!-- loading overlay -->
     <div
       id="loader"
-      class="absolute inset-0 z-30 flex flex-col items-center justify-center gap-6 bg-black/80 px-6 text-center backdrop-blur-sm"
+      class="absolute inset-0 z-30 flex flex-col items-center justify-center gap-6 px-6 text-center backdrop-blur-sm"
+      style="background: rgba(247,246,244,0.92);"
     >
       <h2 class="text-3xl lowercase">powering on the console…</h2>
       <div class="w-full max-w-sm">
-        <div class="h-2 w-full overflow-hidden rounded-full bg-white/15">
+        <div class="h-2 w-full overflow-hidden rounded-full bg-black/15">
           <div id="loadfill" class="h-full w-0 rounded-full" style="background: linear-gradient(90deg,#c7761f,#e8a93c,#f3c566);"></div>
         </div>
-        <p id="loadmsg" class="mt-3 text-xs uppercase tracking-[0.25em] text-white/50">
+        <p id="loadmsg" class="mt-3 text-xs uppercase tracking-[0.25em] text-black/50">
           fetching stems — 0%
         </p>
       </div>
@@ -133,6 +158,11 @@ const homeHref = withBase('/');
   <style>
     .studio {
       background: #060508;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .studio-live {
+        display: none;
+      }
     }
     .console-body {
       background:
@@ -155,11 +185,26 @@ const homeHref = withBase('/');
       user-select: none;
       -webkit-user-select: none;
     }
-    .ch-name {
-      font-size: 9px;
-      letter-spacing: 0.18em;
-      color: rgba(255, 255, 255, 0.75);
+    .ch-num {
+      font-size: 8px;
+      letter-spacing: 0.22em;
+      color: rgba(255, 255, 255, 0.45);
       font-weight: 700;
+    }
+    .scribble {
+      margin-top: 8px;
+      width: 100%;
+      background: linear-gradient(180deg, #f2ecdf, #e6dfcd);
+      color: #241f16;
+      border-radius: 3px;
+      padding: 3px 2px 4px;
+      font-size: 10px;
+      text-align: center;
+      font-family: Georgia, "Times New Roman", serif;
+      font-style: italic;
+      box-shadow:
+        inset 0 1px 2px rgba(0, 0, 0, 0.25),
+        0 1px 0 rgba(255, 255, 255, 0.06);
     }
     .strip::before {
       content: "";
@@ -192,44 +237,87 @@ const homeHref = withBase('/');
     .led.on.hot { background: #e8a93c; box-shadow: 0 0 6px rgba(232, 169, 60, 0.5); }
     .led.on.clip { background: #e23a55; box-shadow: 0 0 6px rgba(226, 58, 85, 0.6); }
 
-    /* Fader */
+    /* Fader — long-throw console style with dB scale */
     .fader {
       position: relative;
-      height: 180px;
+      height: 190px;
       width: 100%;
       cursor: ns-resize;
       touch-action: none;
     }
+    .fader-scale {
+      position: absolute;
+      left: 2px;
+      top: 2px;
+      bottom: 2px;
+      width: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-right: 6px;
+      font-size: 6.5px;
+      font-style: normal;
+      color: rgba(255, 255, 255, 0.42);
+      border-right: 1px solid rgba(255, 255, 255, 0.14);
+      /* minor tick rulings */
+      background:
+        repeating-linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.16) 0 1px,
+            transparent 1px 9px
+          )
+          right / 4px 100% no-repeat;
+    }
     .fader-track {
       position: absolute;
-      left: 50%;
-      top: 4px;
-      bottom: 4px;
-      width: 4px;
+      left: 60%;
+      top: 6px;
+      bottom: 6px;
+      width: 5px;
       transform: translateX(-50%);
       border-radius: 2px;
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.07));
-      box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.8);
+      background: linear-gradient(180deg, #05050a, #101018 50%, #05050a);
+      box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, 0.9),
+        0 1px 0 rgba(255, 255, 255, 0.07);
     }
     .fader-cap {
       position: absolute;
-      left: 50%;
+      left: 60%;
       transform: translate(-50%, 50%);
-      width: 44px;
-      height: 24px;
-      border-radius: 5px;
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+      width: 38px;
+      height: 46px;
+      border-radius: 4px;
+      box-shadow:
+        0 8px 14px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        inset 0 -2px 3px rgba(0, 0, 0, 0.45);
     }
+    /* grip ridges */
+    .fader-cap::before {
+      content: "";
+      position: absolute;
+      inset: 5px 5px;
+      border-radius: 2px;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.28) 0 2px,
+        transparent 2px 6px
+      );
+    }
+    /* center index line */
     .fader-cap::after {
       content: "";
       position: absolute;
-      left: 4px;
-      right: 4px;
+      left: 2px;
+      right: 2px;
       top: 50%;
-      height: 2px;
+      height: 3px;
       transform: translateY(-50%);
-      background: rgba(0, 0, 0, 0.55);
+      background: linear-gradient(90deg, rgba(255,255,255,0.92), rgba(255,255,255,0.75));
       border-radius: 1px;
+      box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
     }
     .strip-golden .fader-cap {
       background: linear-gradient(145deg, #f7d98c, #e8a93c 45%, #a3610f);
