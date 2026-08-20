@@ -124,6 +124,7 @@ export const worlds: World[] = [
     accent2: '#E8A93C',
     font: 'golden',
     planet: 'worlds/golden.jpg',
+    planetVideo: 'worlds/golden.mp4',
   },
   {
     id: 'velvet',
@@ -139,6 +140,7 @@ export const worlds: World[] = [
     accent2: '#7A1020',
     font: 'velvet',
     planet: 'worlds/velvet.jpg',
+    planetVideo: 'worlds/velvet.mp4',
   },
 ];
 
