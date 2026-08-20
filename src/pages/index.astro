@@ -200,14 +200,15 @@ const collageCovers = allCovers.length
           Three writers. One blank page.
         </h2>
 
-        <!-- group portrait — blends into the canvas -->
+        <!-- group portrait — blends into the canvas, colors in on scroll -->
         <div class="reveal group-photo relative mx-auto mt-12 max-w-4xl">
-          <img
-            src={withBase('/members/blanc-group.jpg')}
-            alt="blanc — Nick Tangorra, Jacqueline Tangorra, and Rafe Tangorra"
-            class="w-full"
-            data-speed="0.85"
-          />
+          <div class="group-photo-media relative">
+            <img
+              src={withBase('/members/blanc-group.jpg')}
+              alt="blanc — Nick Tangorra, Jacqueline Tangorra, and Rafe Tangorra"
+              class="w-full"
+            />
+          </div>
         </div>
 
         <div class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -438,6 +439,27 @@ const collageCovers = allCovers.length
           toggleActions: 'play none none reverse',
         },
       });
+
+      // ---- Group portrait: emerges from the blank page — scrubbed both ways.
+      // Starts oversized and drained of color, settles + floods to full color.
+      const groupMedia = document.querySelector('.group-photo-media');
+      if (groupMedia) {
+        gsap.fromTo(
+          groupMedia,
+          { scale: 1.12, filter: 'grayscale(1) contrast(0.92) brightness(1.05)' },
+          {
+            scale: 1,
+            filter: 'grayscale(0) contrast(1) brightness(1)',
+            ease: 'none',
+            scrollTrigger: {
+              trigger: '.group-photo',
+              start: 'top 92%',
+              end: 'top 30%',
+              scrub: 0.5,
+            },
+          }
+        );
+      }
 
       // ---- Lazy living planets: load + play each video as its world approaches ----
       const lazyPlanets = document.querySelectorAll<HTMLVideoElement>('.lazy-planet');
