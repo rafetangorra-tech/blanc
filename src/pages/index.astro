@@ -427,16 +427,15 @@ const collageCovers = allCovers.length
         ScrollTrigger.create({
           trigger: '#intro',
           start: 'top top',
-          end: '+=250%',
+          end: '+=160%',
           pin: true,
           scrub: true,
           anticipatePin: 1,
           onUpdate: (self) => {
             if (wmVideo.readyState >= 2 && wmVideo.duration) {
-              // Melt completes at 50% of the pin — the entire second half
-              // holds the finished drip before the page releases and the
-              // intro raises up into House World.
-              const p = Math.min(1, self.progress / 0.5);
+              // Melt completes at 85% — release comes right on the final
+              // frame's heels (the last 15% is just seek-lag insurance).
+              const p = Math.min(1, self.progress / 0.85);
               seekTo(Math.min(wmVideo.duration - 0.04, p * wmVideo.duration));
             }
           },
