@@ -496,7 +496,8 @@ const homeHref = withBase('/');
         const cap = c.el.querySelector<HTMLElement>('.fader-cap')!;
         c.fader = FADER_DEFAULT;
         cap.style.bottom = `${FADER_DEFAULT * 100}%`;
-        c.el.querySelector('[data-db]')!.textContent = '0.0 dB';
+        c.el.querySelector('[data-db]')!.textContent =
+          `${(20 * Math.log10(posToGain(FADER_DEFAULT))).toFixed(1)} dB`;
       });
       applyGains();
     });
