@@ -189,37 +189,60 @@ const collageCovers = allCovers.length
     <!-- ============ THE COLLECTIVE ============ -->
     <section
       id="collective"
-      class="relative px-6 py-28 sm:px-10"
+      class="relative py-28"
       style="background: var(--canvas); color: var(--canvas-ink);"
     >
-      <div class="mx-auto max-w-6xl">
+      <div class="mx-auto max-w-6xl px-6 sm:px-10">
         <p class="reveal text-xs uppercase tracking-[0.4em] text-black/40">
           the collective
         </p>
         <h2 class="reveal mt-4 max-w-2xl text-4xl font-semibold tracking-tight sm:text-5xl">
           Three writers. One blank page.
         </h2>
+      </div>
 
-        <!-- group portrait — blends into the canvas, colors in on scroll -->
-        <div class="reveal group-photo relative mx-auto mt-12 max-w-4xl">
-          <div class="group-photo-media relative">
-            <img
-              src={withBase('/members/blanc-group.jpg')}
-              alt="blanc — Nick Tangorra, Jacqueline Tangorra, and Rafe Tangorra"
-              class="w-full"
-            />
-            <video
-              class="lazy-planet"
-              muted
-              loop
-              playsinline
-              preload="none"
-              poster={withBase('/members/blanc-group.jpg')}
-              data-src={withBase('/members/blanc-group.mp4')}
-            />
-          </div>
+      <!-- group portrait, full-bleed cinematic (landscape screens) — colors in on scroll -->
+      <div class="reveal group-photo relative mt-12 hidden md:block">
+        <div class="group-photo-media group-photo-wide relative h-[92vh] min-h-[520px] w-full overflow-hidden">
+          <img
+            src={withBase('/members/blanc-group-wide.jpg')}
+            alt="blanc — Nick Tangorra, Jacqueline Tangorra, and Rafe Tangorra"
+            class="absolute inset-0 h-full w-full object-cover object-[center_22%]"
+          />
+          <video
+            class="lazy-planet"
+            style="object-position: center 22%"
+            muted
+            loop
+            playsinline
+            preload="none"
+            poster={withBase('/members/blanc-group-wide.jpg')}
+            data-src={withBase('/members/blanc-group-wide.mp4')}
+          />
         </div>
+      </div>
 
+      <!-- group portrait, contained square (portrait screens) -->
+      <div class="reveal group-photo relative mx-auto mt-12 max-w-4xl px-6 md:hidden">
+        <div class="group-photo-media group-photo-fade relative">
+          <img
+            src={withBase('/members/blanc-group.jpg')}
+            alt="blanc — Nick Tangorra, Jacqueline Tangorra, and Rafe Tangorra"
+            class="w-full"
+          />
+          <video
+            class="lazy-planet"
+            muted
+            loop
+            playsinline
+            preload="none"
+            poster={withBase('/members/blanc-group.jpg')}
+            data-src={withBase('/members/blanc-group.mp4')}
+          />
+        </div>
+      </div>
+
+      <div class="mx-auto max-w-6xl px-6 sm:px-10">
         <div class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {
             members.map((m) => (
@@ -451,24 +474,23 @@ const collageCovers = allCovers.length
 
       // ---- Group portrait: emerges from the blank page — scrubbed both ways.
       // Starts oversized and drained of color, settles + floods to full color.
-      const groupMedia = document.querySelector('.group-photo-media');
-      if (groupMedia) {
+      gsap.utils.toArray<HTMLElement>('.group-photo-media').forEach((media) => {
         gsap.fromTo(
-          groupMedia,
+          media,
           { scale: 1.12, filter: 'grayscale(1) contrast(0.92) brightness(1.05)' },
           {
             scale: 1,
             filter: 'grayscale(0) contrast(1) brightness(1)',
             ease: 'none',
             scrollTrigger: {
-              trigger: '.group-photo',
+              trigger: media,
               start: 'top 92%',
               end: 'top 30%',
               scrub: 0.5,
             },
           }
         );
-      }
+      });
 
       // ---- Lazy living planets: load + play each video as its world approaches ----
       const lazyPlanets = document.querySelectorAll<HTMLVideoElement>('.lazy-planet');

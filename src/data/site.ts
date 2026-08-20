@@ -108,6 +108,7 @@ export const worlds: World[] = [
     accent2: '#FF2D95',
     font: 'house',
     planet: 'worlds/house-orb.jpg',
+    planetVideo: 'worlds/house-orb.mp4',
   },
   {
     id: 'golden',
@@ -123,6 +124,7 @@ export const worlds: World[] = [
     accent2: '#E8A93C',
     font: 'golden',
     planet: 'worlds/golden-orb.jpg',
+    planetVideo: 'worlds/golden-orb.mp4',
   },
   {
     id: 'velvet',

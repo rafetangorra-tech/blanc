@@ -149,10 +149,14 @@ h3,
   display: block;
 }
 
-/* Group portrait — soft-edge mask so the cream photo melts into the canvas */
-.group-photo .group-photo-media {
+/* Group portrait — soft-edge masks so the cream photo melts into the canvas */
+.group-photo-fade {
   -webkit-mask-image: radial-gradient(120% 100% at 50% 45%, #000 55%, transparent 92%);
   mask-image: radial-gradient(120% 100% at 50% 45%, #000 55%, transparent 92%);
+}
+.group-photo-wide {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent);
 }
 .group-photo video {
   position: absolute;
