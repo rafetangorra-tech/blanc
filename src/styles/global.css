@@ -7,8 +7,8 @@
 
 :root {
   --font-sans: "Inter Variable", system-ui, -apple-system, sans-serif;
-  /* One brand voice: heavy grotesque (Arial Black). Worlds differ by color + motion, not typeface. */
-  --font-display: "Arial Black", "Arial Bold", "Helvetica Neue", Arial, sans-serif;
+  /* One brand voice: Archivo stretched wide (Druk-Wide vibe). Worlds differ by color + motion, not typeface. */
+  --font-display: "Archivo Variable", "Arial Black", "Helvetica Neue", Arial, sans-serif;
   --font-house: var(--font-display);
   --font-golden: var(--font-display);
   --font-velvet: var(--font-display);
@@ -60,7 +60,8 @@ h3,
 .font-velvet {
   font-family: var(--font-display);
   font-weight: 900;
-  letter-spacing: -0.03em;
+  font-variation-settings: "wdth" 125; /* the stretch */
+  letter-spacing: -0.01em;
 }
 
 /* ---- Reveal system ----
