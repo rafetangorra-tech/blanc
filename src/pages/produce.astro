@@ -1,0 +1,538 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/url';
+
+// The console — six stems from "Beautiful Woman", each channel dressed
+// in the world its sound belongs to.
+const channels = [
+  { id: 'vocals', name: 'VOCALS', world: 'golden' },
+  { id: 'keys', name: 'KEYS', world: 'golden' },
+  { id: 'drums', name: 'DRUMS', world: 'house' },
+  { id: 'synthfx', name: 'SYNTH FX', world: 'house' },
+  { id: 'guitar', name: 'GUITAR', world: 'velvet' },
+  { id: 'bass', name: 'BASS', world: 'velvet' },
+];
+const homeHref = withBase('/');
+---
+
+<BaseLayout
+  title="i produce — blanc"
+  description="Sit behind the board. Mix the stems of Beautiful Woman by blanc — faders, mutes, solos. You're the producer now."
+>
+  <header
+    class="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-5 py-4 text-white mix-blend-difference sm:px-8"
+  >
+    <a href={homeHref} class="text-sm uppercase tracking-[0.2em]">← blanc</a>
+    <p class="hidden text-xs uppercase tracking-[0.3em] text-white/60 sm:block">
+      beautiful woman — stem session
+    </p>
+  </header>
+
+  <main class="studio relative flex min-h-screen flex-col overflow-hidden text-white">
+    <!-- studio backdrop -->
+    <div class="absolute inset-0" aria-hidden="true">
+      <img
+        src={withBase('/produce-studio.jpg')}
+        alt=""
+        class="h-full w-full object-cover object-[center_30%]"
+        onerror="this.style.display='none'"
+      />
+      <div
+        class="absolute inset-0"
+        style="background: linear-gradient(to bottom, rgba(6,5,8,0.55), rgba(6,5,8,0.25) 30%, rgba(6,5,8,0.78) 62%, rgba(6,5,8,0.97) 78%);"
+      >
+      </div>
+    </div>
+
+    <!-- title -->
+    <div class="relative z-10 mx-auto mt-24 px-6 text-center">
+      <h1 class="text-5xl lowercase sm:text-6xl">i produce</h1>
+      <p class="mt-3 text-sm text-white/60">
+        You're behind the board. Six stems of
+        <span class="font-semibold text-white">Beautiful Woman</span> — ride the
+        faders, mute, solo. Make it yours.
+      </p>
+    </div>
+
+    <!-- transport -->
+    <div
+      class="relative z-10 mx-auto mt-8 flex w-full max-w-3xl items-center gap-4 px-6"
+    >
+      <button
+        id="play"
+        class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-black transition-transform hover:scale-105 disabled:opacity-40"
+        style="background: linear-gradient(145deg, #f3c566, #c7761f);"
+        aria-label="Play / pause"
+        disabled
+      >
+        <svg id="icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+        <svg id="icon-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="hidden"><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
+      </button>
+      <span id="time" class="w-14 shrink-0 font-mono text-sm text-white/70">0:00</span>
+      <div id="seekbar" class="group relative h-2 flex-1 cursor-pointer rounded-full bg-white/15">
+        <div id="seekfill" class="absolute inset-y-0 left-0 w-0 rounded-full" style="background: linear-gradient(90deg,#c7761f,#e8a93c);"></div>
+        <div id="seekhead" class="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-0 transition-opacity group-hover:opacity-100" style="left:0%"></div>
+      </div>
+      <span id="dur" class="w-14 shrink-0 text-right font-mono text-sm text-white/70">-:--</span>
+      <button
+        id="resetmix"
+        class="shrink-0 rounded-full border border-white/25 px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-white/70 transition-colors hover:bg-white hover:text-black"
+        >Reset mix</button
+      >
+    </div>
+
+    <!-- the console -->
+    <div class="relative z-10 mt-8 w-full pb-8">
+      <div class="console mx-auto max-w-5xl overflow-x-auto px-4 no-bar">
+        <div class="console-body mx-auto flex min-w-[640px] justify-center gap-2 rounded-2xl p-4 sm:gap-3 sm:p-6">
+          {
+            channels.map((ch) => (
+              <div class={`strip strip-${ch.world}`} data-ch={ch.id}>
+                <p class="ch-name">{ch.name}</p>
+                <div class="meter" aria-hidden="true">
+                  {Array.from({ length: 14 }).map(() => (
+                    <span class="led" />
+                  ))}
+                </div>
+                <div class="fader" data-fader>
+                  <div class="fader-track" />
+                  <div class="fader-cap" style="bottom: 72%" />
+                </div>
+                <p class="db font-mono" data-db>0.0 dB</p>
+                <div class="mt-2 flex justify-center gap-1.5">
+                  <button class="chbtn mute" data-mute aria-label={`Mute ${ch.name}`}>M</button>
+                  <button class="chbtn solo" data-solo aria-label={`Solo ${ch.name}`}>S</button>
+                </div>
+              </div>
+            ))
+          }
+        </div>
+        <p class="mt-3 text-center text-[10px] uppercase tracking-[0.35em] text-white/30">
+          blanc console · one group. many worlds.
+        </p>
+      </div>
+    </div>
+
+    <!-- loading overlay -->
+    <div
+      id="loader"
+      class="absolute inset-0 z-30 flex flex-col items-center justify-center gap-6 bg-black/80 px-6 text-center backdrop-blur-sm"
+    >
+      <h2 class="text-3xl lowercase">powering on the console…</h2>
+      <div class="w-full max-w-sm">
+        <div class="h-2 w-full overflow-hidden rounded-full bg-white/15">
+          <div id="loadfill" class="h-full w-0 rounded-full" style="background: linear-gradient(90deg,#c7761f,#e8a93c,#f3c566);"></div>
+        </div>
+        <p id="loadmsg" class="mt-3 text-xs uppercase tracking-[0.25em] text-white/50">
+          fetching stems — 0%
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <style>
+    .studio {
+      background: #060508;
+    }
+    .console-body {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02) 12%, rgba(0, 0, 0, 0.35)),
+        linear-gradient(180deg, #17151c, #0c0b10);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow:
+        0 30px 60px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+    .strip {
+      width: 92px;
+      padding: 10px 8px 12px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(0, 0, 0, 0.25));
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .ch-name {
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      color: rgba(255, 255, 255, 0.75);
+      font-weight: 700;
+    }
+    .strip::before {
+      content: "";
+      display: block;
+      width: 26px;
+      height: 3px;
+      border-radius: 2px;
+      margin-bottom: 6px;
+    }
+    .strip-golden::before { background: linear-gradient(90deg, #c7761f, #f3c566); }
+    .strip-house::before { background: linear-gradient(90deg, #00e5ff, #ff2d95); }
+    .strip-velvet::before { background: linear-gradient(90deg, #7a1020, #e23a55); }
+
+    /* LED meter */
+    .meter {
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 2px;
+      height: 88px;
+      margin: 8px 0 10px;
+    }
+    .led {
+      width: 22px;
+      height: 4px;
+      border-radius: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      transition: background 60ms linear;
+    }
+    .led.on { background: #39d98a; box-shadow: 0 0 6px rgba(57, 217, 138, 0.5); }
+    .led.on.hot { background: #e8a93c; box-shadow: 0 0 6px rgba(232, 169, 60, 0.5); }
+    .led.on.clip { background: #e23a55; box-shadow: 0 0 6px rgba(226, 58, 85, 0.6); }
+
+    /* Fader */
+    .fader {
+      position: relative;
+      height: 180px;
+      width: 100%;
+      cursor: ns-resize;
+      touch-action: none;
+    }
+    .fader-track {
+      position: absolute;
+      left: 50%;
+      top: 4px;
+      bottom: 4px;
+      width: 4px;
+      transform: translateX(-50%);
+      border-radius: 2px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.07));
+      box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.8);
+    }
+    .fader-cap {
+      position: absolute;
+      left: 50%;
+      transform: translate(-50%, 50%);
+      width: 44px;
+      height: 24px;
+      border-radius: 5px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    }
+    .fader-cap::after {
+      content: "";
+      position: absolute;
+      left: 4px;
+      right: 4px;
+      top: 50%;
+      height: 2px;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.55);
+      border-radius: 1px;
+    }
+    .strip-golden .fader-cap {
+      background: linear-gradient(145deg, #f7d98c, #e8a93c 45%, #a3610f);
+    }
+    .strip-house .fader-cap {
+      background: linear-gradient(135deg, #d8dbe6 0%, #7fe7ff 30%, #b48ce8 55%, #ff7fc0 75%, #9aa0b4 100%);
+    }
+    .strip-velvet .fader-cap {
+      background:
+        radial-gradient(120% 100% at 30% 20%, rgba(255, 255, 255, 0.25), transparent 40%),
+        linear-gradient(145deg, #a41f36, #7a1020 70%, #4d0813);
+    }
+    .db {
+      font-size: 9px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 6px;
+    }
+
+    /* Mute / Solo */
+    .chbtn {
+      width: 26px;
+      height: 22px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.65);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition: all 120ms ease;
+    }
+    .chbtn.mute.active {
+      background: #e23a55;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(226, 58, 85, 0.6);
+    }
+    .chbtn.solo.active {
+      background: #e8a93c;
+      color: #1a1206;
+      box-shadow: 0 0 10px rgba(232, 169, 60, 0.6);
+    }
+  </style>
+
+  <script>
+    // ————— blanc console — the "i produce" stem mixer —————
+    const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
+    const STEMS = ['vocals', 'keys', 'drums', 'synthfx', 'guitar', 'bass'];
+
+    type Ch = {
+      id: string;
+      buffer: AudioBuffer | null;
+      source: AudioBufferSourceNode | null;
+      gainNode: GainNode;
+      analyser: AnalyserNode;
+      fader: number; // 0..1 cap position
+      muted: boolean;
+      solo: boolean;
+      el: HTMLElement;
+    };
+
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const master = ctx.createGain();
+    master.connect(ctx.destination);
+
+    const FADER_DEFAULT = 0.72;
+    const posToGain = (p: number) => Math.pow(p, 1.7) * 1.4; // 0→0, 0.72→~0.8, 1→1.4 (+3dB)
+
+    const chans: Ch[] = STEMS.map((id) => {
+      const el = document.querySelector<HTMLElement>(`[data-ch="${id}"]`)!;
+      const gainNode = ctx.createGain();
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 512;
+      gainNode.connect(analyser);
+      analyser.connect(master);
+      return {
+        id, buffer: null, source: null, gainNode, analyser,
+        fader: FADER_DEFAULT, muted: false, solo: false, el,
+      };
+    });
+
+    // ---- effective gain (fader × mute × solo logic) ----
+    function applyGains() {
+      const anySolo = chans.some((c) => c.solo);
+      chans.forEach((c) => {
+        const audible = !c.muted && (!anySolo || c.solo);
+        const g = audible ? posToGain(c.fader) : 0;
+        c.gainNode.gain.setTargetAtTime(g, ctx.currentTime, 0.02);
+      });
+    }
+
+    // ---- loading ----
+    const loader = document.getElementById('loader')!;
+    const loadfill = document.getElementById('loadfill')!;
+    const loadmsg = document.getElementById('loadmsg')!;
+    const playBtn = document.getElementById('play') as HTMLButtonElement;
+
+    async function fetchStem(id: string, onBytes: (n: number) => void): Promise<ArrayBuffer> {
+      const res = await fetch(`${BASE}/stems/${id}.mp3`);
+      if (!res.ok || !res.body) throw new Error(`stem ${id}: ${res.status}`);
+      const reader = res.body.getReader();
+      const parts: Uint8Array[] = [];
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        parts.push(value);
+        onBytes(value.byteLength);
+      }
+      const total = parts.reduce((n, p) => n + p.byteLength, 0);
+      const out = new Uint8Array(total);
+      let o = 0;
+      for (const p of parts) { out.set(p, o); o += p.byteLength; }
+      return out.buffer;
+    }
+
+    async function loadAll() {
+      const APPROX_TOTAL = 27 * 1024 * 1024;
+      let got = 0;
+      const tick = (n: number) => {
+        got += n;
+        const pct = Math.min(99, Math.round((got / APPROX_TOTAL) * 100));
+        loadfill.style.width = pct + '%';
+        loadmsg.textContent = `fetching stems — ${pct}%`;
+      };
+      const raws = await Promise.all(STEMS.map((id) => fetchStem(id, tick)));
+      loadmsg.textContent = 'decoding audio…';
+      for (let i = 0; i < chans.length; i++) {
+        chans[i].buffer = await ctx.decodeAudioData(raws[i]);
+      }
+      loadfill.style.width = '100%';
+      loader.style.transition = 'opacity 0.6s ease';
+      loader.style.opacity = '0';
+      setTimeout(() => loader.remove(), 650);
+      playBtn.disabled = false;
+      durEl.textContent = fmt(duration());
+      applyGains();
+    }
+
+    // ---- transport ----
+    let playing = false;
+    let startedAt = 0; // ctx.currentTime when playback started
+    let offset = 0; // song position when playback started
+    const timeEl = document.getElementById('time')!;
+    const durEl = document.getElementById('dur')!;
+    const seekbar = document.getElementById('seekbar')!;
+    const seekfill = document.getElementById('seekfill')!;
+    const seekhead = document.getElementById('seekhead')!;
+    const iconPlay = document.getElementById('icon-play')!;
+    const iconPause = document.getElementById('icon-pause')!;
+
+    const duration = () =>
+      Math.max(...chans.map((c) => c.buffer?.duration ?? 0));
+    const fmt = (s: number) =>
+      `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+    const now = () => (playing ? ctx.currentTime - startedAt + offset : offset);
+
+    function startSources(at: number) {
+      const t0 = ctx.currentTime + 0.06;
+      chans.forEach((c) => {
+        if (!c.buffer) return;
+        const src = ctx.createBufferSource();
+        src.buffer = c.buffer;
+        src.connect(c.gainNode);
+        src.start(t0, Math.min(at, c.buffer.duration - 0.01));
+        c.source = src;
+      });
+      startedAt = t0;
+      offset = at;
+    }
+    function stopSources() {
+      chans.forEach((c) => {
+        try { c.source?.stop(); } catch {}
+        c.source = null;
+      });
+    }
+
+    async function togglePlay() {
+      await ctx.resume();
+      if (!playing) {
+        if (now() >= duration() - 0.05) offset = 0;
+        startSources(offset);
+        playing = true;
+      } else {
+        offset = now();
+        stopSources();
+        playing = false;
+      }
+      iconPlay.classList.toggle('hidden', playing);
+      iconPause.classList.toggle('hidden', !playing);
+    }
+    playBtn.addEventListener('click', togglePlay);
+
+    function seekTo(frac: number) {
+      const t = Math.max(0, Math.min(0.999, frac)) * duration();
+      if (playing) {
+        stopSources();
+        startSources(t);
+      } else {
+        offset = t;
+      }
+    }
+    seekbar.addEventListener('pointerdown', (e) => {
+      const r = seekbar.getBoundingClientRect();
+      seekTo((e.clientX - r.left) / r.width);
+    });
+
+    // song end watchdog
+    setInterval(() => {
+      if (playing && now() >= duration()) {
+        stopSources();
+        playing = false;
+        offset = 0;
+        iconPlay.classList.remove('hidden');
+        iconPause.classList.add('hidden');
+      }
+    }, 250);
+
+    // ---- faders (pointer drag) ----
+    chans.forEach((c) => {
+      const fader = c.el.querySelector<HTMLElement>('[data-fader]')!;
+      const cap = fader.querySelector<HTMLElement>('.fader-cap')!;
+      const dbEl = c.el.querySelector<HTMLElement>('[data-db]')!;
+      const setPos = (p: number) => {
+        c.fader = Math.max(0, Math.min(1, p));
+        cap.style.bottom = `${c.fader * 100}%`;
+        const g = posToGain(c.fader);
+        dbEl.textContent = g <= 0.001 ? '-∞ dB' : `${(20 * Math.log10(g)).toFixed(1)} dB`;
+        applyGains();
+      };
+      setPos(FADER_DEFAULT);
+      const fromEvent = (e: PointerEvent) => {
+        const r = fader.getBoundingClientRect();
+        setPos(1 - (e.clientY - r.top) / r.height);
+      };
+      fader.addEventListener('pointerdown', (e) => {
+        fader.setPointerCapture(e.pointerId);
+        fromEvent(e);
+      });
+      fader.addEventListener('pointermove', (e) => {
+        if (e.buttons) fromEvent(e);
+      });
+      fader.addEventListener('dblclick', () => setPos(FADER_DEFAULT));
+
+      // mute / solo
+      const muteBtn = c.el.querySelector<HTMLElement>('[data-mute]')!;
+      const soloBtn = c.el.querySelector<HTMLElement>('[data-solo]')!;
+      muteBtn.addEventListener('click', () => {
+        c.muted = !c.muted;
+        muteBtn.classList.toggle('active', c.muted);
+        applyGains();
+      });
+      soloBtn.addEventListener('click', () => {
+        c.solo = !c.solo;
+        soloBtn.classList.toggle('active', c.solo);
+        applyGains();
+      });
+    });
+
+    // reset mix
+    document.getElementById('resetmix')!.addEventListener('click', () => {
+      chans.forEach((c) => {
+        c.muted = false;
+        c.solo = false;
+        c.el.querySelector('[data-mute]')!.classList.remove('active');
+        c.el.querySelector('[data-solo]')!.classList.remove('active');
+        const cap = c.el.querySelector<HTMLElement>('.fader-cap')!;
+        c.fader = FADER_DEFAULT;
+        cap.style.bottom = `${FADER_DEFAULT * 100}%`;
+        c.el.querySelector('[data-db]')!.textContent = '0.0 dB';
+      });
+      applyGains();
+    });
+
+    // ---- meters + time (rAF) ----
+    const meterData = new Uint8Array(256);
+    function frame() {
+      chans.forEach((c) => {
+        c.analyser.getByteTimeDomainData(meterData);
+        let sum = 0;
+        for (let i = 0; i < meterData.length; i++) {
+          const v = (meterData[i] - 128) / 128;
+          sum += v * v;
+        }
+        const rms = Math.sqrt(sum / meterData.length);
+        const level = Math.min(1, rms * 3.2);
+        const leds = c.el.querySelectorAll('.led');
+        const litCount = Math.round(level * leds.length);
+        leds.forEach((led, i) => {
+          led.classList.toggle('on', i < litCount);
+          led.classList.toggle('hot', i < litCount && i >= leds.length - 5 && i < leds.length - 2);
+          led.classList.toggle('clip', i < litCount && i >= leds.length - 2);
+        });
+      });
+      const t = Math.min(now(), duration() || 0);
+      timeEl.textContent = fmt(t);
+      const frac = duration() ? t / duration() : 0;
+      seekfill.style.width = `${frac * 100}%`;
+      (seekhead as HTMLElement).style.left = `${frac * 100}%`;
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+
+    loadAll().catch((err) => {
+      loadmsg.textContent = 'could not load the stems — try refreshing.';
+      console.error(err);
+    });
+  </script>
+</BaseLayout>
