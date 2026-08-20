@@ -14,9 +14,11 @@ const collageCovers = allCovers.length
 
 <BaseLayout>
   <!-- Scroll progress -->
+  <!-- scroll progress — a thin gold drip line filling across the top -->
   <div
     id="progress"
-    class="fixed left-0 top-0 z-50 h-[3px] w-full origin-left scale-x-0 bg-current"
+    class="fixed left-0 top-0 z-50 h-[3px] w-full origin-left scale-x-0"
+    style="background: linear-gradient(90deg, #C7761F, #E8A93C 60%, #F3C566);"
     aria-hidden="true"
   >
   </div>
@@ -65,14 +67,15 @@ const collageCovers = allCovers.length
         >
           songwriting collective
         </p>
-        <h1 id="wordmark" class="relative">
+        <h1 id="wordmark">
           <span class="block text-[18vw] leading-none sm:text-[14vw] lg:text-[12rem]"
             >blanc</span
           >
-          <!-- material-transformation wordmark: scroll pours the worlds onto the letters -->
+          <!-- material-transformation wordmark: scroll pours the worlds onto the letters.
+               In normal flow, contained — never wider than the viewport. -->
           <video
             id="wordmark-video"
-            class="absolute left-1/2 top-1/2 hidden aspect-video w-[115vw] max-w-none -translate-x-1/2 -translate-y-1/2"
+            class="mx-auto hidden aspect-video w-[min(96vw,120vh)]"
             muted
             playsinline
             preload="auto"
@@ -181,8 +184,8 @@ const collageCovers = allCovers.length
               >
                 <a
                   href={withBase(`/worlds/${w.id}`)}
-                  class="group inline-flex items-center gap-3 rounded-full border px-7 py-4 text-sm font-medium uppercase tracking-[0.2em] transition-colors hover:bg-white/5"
-                  style={`border-color:${w.accent}66; color:${w.ink};`}
+                  class="btn-drip group inline-flex items-center gap-3 rounded-full border px-7 py-4 text-sm font-medium uppercase tracking-[0.2em]"
+                  style={`border-color:${w.accent}66; color:${w.ink}; --drip:${w.accent}; --drip-ink:${w.bg};`}
                 >
                   Enter {w.name}
                   <span
@@ -400,7 +403,7 @@ const collageCovers = allCovers.length
         wmVideo.src = wmVideo.dataset.src;
         wmVideo.addEventListener('loadeddata', () => {
           wmVideo.classList.remove('hidden');
-          if (wmText) wmText.style.visibility = 'hidden';
+          if (wmText) wmText.style.display = 'none';
           ScrollTrigger.create({
             trigger: '#intro',
             start: 'top top',

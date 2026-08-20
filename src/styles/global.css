@@ -73,6 +73,29 @@ h3,
   will-change: transform, opacity;
 }
 
+/* Liquid-fill button hover — the world's color pours down into the button */
+.btn-drip {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition: color 0.35s ease;
+}
+.btn-drip::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--drip, #e8a93c);
+  transform: translateY(-101%);
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-drip:hover {
+  color: var(--drip-ink, #0a0a0a) !important;
+}
+.btn-drip:hover::before {
+  transform: translateY(0);
+}
+
 /* Scroll cue */
 @keyframes cue {
   0% { transform: translateY(0); opacity: 0.2; }
