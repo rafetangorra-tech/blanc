@@ -84,8 +84,8 @@ h3,
 
 /* Planet renders — mask the black square into a clean disc + gentle float */
 .planet {
-  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 47%, transparent 50%);
-  mask-image: radial-gradient(circle at 50% 50%, #000 47%, transparent 50%);
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 44%, transparent 48.5%);
+  mask-image: radial-gradient(circle at 50% 50%, #000 44%, transparent 48.5%);
   animation: float 9s ease-in-out infinite;
 }
 /* Living-planet video layer sits on top of the still, inside the same mask */

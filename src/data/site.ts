@@ -107,8 +107,7 @@ export const worlds: World[] = [
     accent: '#00E5FF',
     accent2: '#FF2D95',
     font: 'house',
-    planet: 'worlds/house.jpg',
-    planetVideo: 'worlds/house.mp4',
+    planet: 'worlds/house-orb.jpg',
   },
   {
     id: 'golden',
@@ -123,8 +122,7 @@ export const worlds: World[] = [
     accent: '#C7761F',
     accent2: '#E8A93C',
     font: 'golden',
-    planet: 'worlds/golden.jpg',
-    planetVideo: 'worlds/golden.mp4',
+    planet: 'worlds/golden-orb.jpg',
   },
   {
     id: 'velvet',
@@ -139,8 +137,7 @@ export const worlds: World[] = [
     accent: '#E23A55',
     accent2: '#7A1020',
     font: 'velvet',
-    planet: 'worlds/velvet.jpg',
-    planetVideo: 'worlds/velvet.mp4',
+    planet: 'worlds/velvet-orb.jpg',
   },
 ];
 
