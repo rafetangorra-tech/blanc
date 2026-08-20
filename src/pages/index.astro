@@ -403,6 +403,26 @@ const collageCovers = allCovers.length
         wmVideo.addEventListener('loadeddata', () => {
           wmVideo.classList.remove('hidden');
           if (wmText) wmText.style.display = 'none';
+
+          // Seek manager: never stack seeks — while the browser is mid-seek,
+          // remember only the latest target and apply it on 'seeked'. This is
+          // what keeps the displayed frame honest during fast scrolling.
+          let pendingSeek: number | null = null;
+          const seekTo = (t: number) => {
+            if (wmVideo.seeking) {
+              pendingSeek = t;
+            } else {
+              wmVideo.currentTime = t;
+            }
+          };
+          wmVideo.addEventListener('seeked', () => {
+            if (pendingSeek !== null) {
+              const t = pendingSeek;
+              pendingSeek = null;
+              wmVideo.currentTime = t;
+            }
+          });
+
           ScrollTrigger.create({
             trigger: '#intro',
             start: 'top top',
@@ -412,13 +432,11 @@ const collageCovers = allCovers.length
             anticipatePin: 1,
             onUpdate: (self) => {
               if (wmVideo.readyState >= 2 && wmVideo.duration) {
-                // The melt completes at 70% of the pin — the last 30% holds
-                // the fully-dripped wordmark before the page releases.
-                const p = Math.min(1, self.progress / 0.7);
-                wmVideo.currentTime = Math.min(
-                  wmVideo.duration - 0.04,
-                  p * wmVideo.duration
-                );
+                // Melt completes at 50% of the pin — the entire second half
+                // holds the finished drip, guaranteeing the end is reached
+                // (and seen) before the page releases.
+                const p = Math.min(1, self.progress / 0.5);
+                seekTo(Math.min(wmVideo.duration - 0.04, p * wmVideo.duration));
               }
             },
           });
