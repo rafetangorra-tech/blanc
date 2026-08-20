@@ -61,33 +61,32 @@ const collageCovers = allCovers.length
       class="relative flex h-screen items-center justify-center overflow-hidden"
       style="background: var(--canvas); color: var(--canvas-ink);"
     >
-      <div class="px-6 text-center">
-        <p
-          class="reveal mb-6 text-xs uppercase tracking-[0.4em] text-black/40"
+      <p
+        class="reveal absolute top-24 left-1/2 z-10 -translate-x-1/2 text-center text-xs uppercase tracking-[0.4em] text-black/40"
+      >
+        songwriting collective
+      </p>
+      <h1 id="wordmark" class="w-full px-6 text-center">
+        <span class="block text-[18vw] leading-none sm:text-[14vw] lg:text-[12rem]"
+          >blanc</span
         >
-          songwriting collective
-        </p>
-        <h1 id="wordmark">
-          <span class="block text-[18vw] leading-none sm:text-[14vw] lg:text-[12rem]"
-            >blanc</span
-          >
-          <!-- material-transformation wordmark: scroll pours the worlds onto the letters.
-               In normal flow, contained — never wider than the viewport. -->
-          <video
-            id="wordmark-video"
-            class="mx-auto hidden aspect-video w-[min(96vw,120vh)]"
-            muted
-            playsinline
-            preload="auto"
-            data-src={withBase('/blanc-transform.mp4')}
-          />
-        </h1>
-        <p
-          class="reveal mx-auto mt-6 max-w-xl text-lg text-black/60 sm:text-xl"
-        >
-          {site.tagline}
-        </p>
-      </div>
+        <!-- material-transformation wordmark: a full-bleed layer. The frame's
+             generous cream margins make cover-cropping safe on landscape;
+             portrait screens fall back to contain so letters never clip. -->
+        <video
+          id="wordmark-video"
+          class="absolute inset-0 hidden h-full w-full object-contain md:object-cover"
+          muted
+          playsinline
+          preload="auto"
+          data-src={withBase('/blanc-transform.mp4')}
+        />
+      </h1>
+      <p
+        class="reveal absolute bottom-20 left-1/2 z-10 w-full -translate-x-1/2 px-6 text-center text-lg text-black/60 sm:text-xl"
+      >
+        {site.tagline}
+      </p>
 
       <div
         class="scroll-cue absolute bottom-8 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.3em] text-black/40"
@@ -407,15 +406,18 @@ const collageCovers = allCovers.length
           ScrollTrigger.create({
             trigger: '#intro',
             start: 'top top',
-            end: '+=160%',
+            end: '+=250%',
             pin: true,
             scrub: true,
             anticipatePin: 1,
             onUpdate: (self) => {
               if (wmVideo.readyState >= 2 && wmVideo.duration) {
+                // The melt completes at 70% of the pin — the last 30% holds
+                // the fully-dripped wordmark before the page releases.
+                const p = Math.min(1, self.progress / 0.7);
                 wmVideo.currentTime = Math.min(
-                  wmVideo.duration - 0.05,
-                  self.progress * wmVideo.duration
+                  wmVideo.duration - 0.04,
+                  p * wmVideo.duration
                 );
               }
             },
