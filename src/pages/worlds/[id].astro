@@ -90,11 +90,25 @@ const collageCovers = allCovers.length
           </div>
           {
             world.planet ? (
-              <img
-                src={withBase(`/${world.planet}`)}
-                alt={`${world.name} planet`}
-                class="planet relative h-full w-full object-contain"
-              />
+              <div class="planet relative h-full w-full">
+                <img
+                  src={withBase(`/${world.planet}`)}
+                  alt={`${world.name} planet`}
+                  class="h-full w-full object-contain"
+                />
+                {world.planetVideo && (
+                  <video
+                    class="planet-video"
+                    autoplay
+                    muted
+                    loop
+                    playsinline
+                    poster={withBase(`/${world.planet}`)}
+                  >
+                    <source src={withBase(`/${world.planetVideo}`)} type="video/mp4" />
+                  </video>
+                )}
+              </div>
             ) : (
               <div
                 class="relative h-full w-full rounded-full"

@@ -27,6 +27,7 @@ export type World = {
   accent2: string;
   font: 'house' | 'golden' | 'velvet';
   planet?: string; // path under /public for the world's planet image (Higgsfield render)
+  planetVideo?: string; // optional looping video of the planet (Higgsfield image-to-video)
 };
 
 export type Member = {
@@ -107,6 +108,7 @@ export const worlds: World[] = [
     accent2: '#FF2D95',
     font: 'house',
     planet: 'worlds/house.jpg',
+    planetVideo: 'worlds/house.mp4',
   },
   {
     id: 'golden',

@@ -142,12 +142,25 @@ const collageCovers = allCovers.length
                     style={`background: radial-gradient(circle, ${w.accent}, transparent 68%);`}
                     aria-hidden="true"
                   />
-                  <img
-                    src={withBase(`/${w.planet}`)}
-                    alt=""
-                    aria-hidden="true"
-                    class="planet relative aspect-square w-full object-contain"
-                  />
+                  <div class="planet relative aspect-square w-full">
+                    <img
+                      src={withBase(`/${w.planet}`)}
+                      alt=""
+                      aria-hidden="true"
+                      class="h-full w-full object-contain"
+                    />
+                    {w.planetVideo && (
+                      <video
+                        class="planet-video lazy-planet"
+                        muted
+                        loop
+                        playsinline
+                        preload="none"
+                        poster={withBase(`/${w.planet}`)}
+                        data-src={withBase(`/${w.planetVideo}`)}
+                      />
+                    )}
+                  </div>
                 </a>
               )}
               <div class="reveal text-center lg:text-left" data-speed="0.6">
@@ -425,6 +438,26 @@ const collageCovers = allCovers.length
           toggleActions: 'play none none reverse',
         },
       });
+
+      // ---- Lazy living planets: load + play each video as its world approaches ----
+      const lazyPlanets = document.querySelectorAll<HTMLVideoElement>('.lazy-planet');
+      if (lazyPlanets.length) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              const v = entry.target as HTMLVideoElement;
+              if (entry.isIntersecting) {
+                if (!v.src && v.dataset.src) v.src = v.dataset.src;
+                v.play().catch(() => {});
+              } else {
+                v.pause();
+              }
+            });
+          },
+          { rootMargin: '300px' }
+        );
+        lazyPlanets.forEach((v) => io.observe(v));
+      }
 
       // ---- Scroll progress bar ----
       gsap.to('#progress', {
