@@ -7,9 +7,11 @@
 
 :root {
   --font-sans: "Inter Variable", system-ui, -apple-system, sans-serif;
-  --font-house: "Space Grotesk Variable", var(--font-sans);
-  --font-golden: "Fraunces Variable", Georgia, "Times New Roman", serif;
-  --font-velvet: "Anton", "Inter Variable", sans-serif;
+  /* One brand voice: Syne. Worlds differ by color + motion, not typeface. */
+  --font-display: "Syne Variable", var(--font-sans);
+  --font-house: var(--font-display);
+  --font-golden: var(--font-display);
+  --font-velvet: var(--font-display);
 
   --canvas: #f7f6f4; /* the blank page */
   --canvas-ink: #0a0a0a;
@@ -48,16 +50,17 @@ html.lenis body {
   overflow: hidden;
 }
 
-/* World font helpers */
-.font-house {
-  font-family: var(--font-house);
-}
-.font-golden {
-  font-family: var(--font-golden);
-}
+/* The blanc display voice — every heading, one typeface */
+h1,
+h2,
+h3,
+.font-display,
+.font-house,
+.font-golden,
 .font-velvet {
-  font-family: var(--font-velvet);
-  letter-spacing: 0.01em;
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 /* ---- Reveal system ----
