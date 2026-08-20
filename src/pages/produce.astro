@@ -30,33 +30,32 @@ const homeHref = withBase('/');
 
   <main
     class="studio relative flex min-h-screen flex-col overflow-hidden"
-    style="color: var(--canvas-ink);"
+    style="color: var(--canvas-ink); background: var(--canvas);"
   >
-    <!-- studio backdrop -->
-    <div class="absolute inset-0" aria-hidden="true">
+    <!-- studio backdrop — dissolves softly into the cream page, no hard edges -->
+    <div
+      class="absolute inset-x-0 top-0 h-[72vh]"
+      aria-hidden="true"
+      style="-webkit-mask-image: linear-gradient(to bottom, #000 50%, transparent 98%); mask-image: linear-gradient(to bottom, #000 50%, transparent 98%);"
+    >
       <img
-        src={withBase('/produce-studio.jpg')}
+        src={withBase('/produce-studio-2.jpg')}
         alt=""
-        class="h-full w-full object-cover object-[center_30%]"
+        class="h-full w-full object-cover object-[center_38%]"
         onerror="this.style.display='none'"
       />
-      <!-- living studio: lamps breathe, rack LEDs blink, haze drifts -->
+      <!-- living studio: lamp breathes, rack LEDs blink, haze drifts -->
       <video
-        class="studio-live absolute inset-0 h-full w-full object-cover object-[center_30%]"
+        class="studio-live absolute inset-0 h-full w-full object-cover object-[center_38%]"
         autoplay
         muted
         loop
         playsinline
-        poster={withBase('/produce-studio.jpg')}
+        poster={withBase('/produce-studio-2.jpg')}
         onerror="this.remove()"
       >
-        <source src={withBase('/produce-studio.mp4')} type="video/mp4" />
+        <source src={withBase('/produce-studio-2.mp4')} type="video/mp4" />
       </video>
-      <div
-        class="absolute inset-0"
-        style="background: linear-gradient(to bottom, rgba(247,246,244,0.6), rgba(247,246,244,0.12) 30%, rgba(247,246,244,0.62) 60%, rgba(247,246,244,0.97) 78%);"
-      >
-      </div>
     </div>
 
     <!-- title -->
@@ -99,7 +98,7 @@ const homeHref = withBase('/');
     <!-- the console -->
     <div class="relative z-10 mt-8 w-full pb-8">
       <div class="console mx-auto max-w-5xl overflow-x-auto px-4 no-bar">
-        <div class="console-body mx-auto flex min-w-[640px] justify-center gap-2 rounded-2xl p-4 sm:gap-3 sm:p-6">
+        <div class="console-body mx-auto flex w-fit justify-center gap-2 rounded-3xl p-4 sm:gap-3 sm:p-6">
           {
             channels.map((ch, i) => (
               <div class={`strip strip-${ch.world}`} data-ch={ch.id}>
@@ -157,7 +156,7 @@ const homeHref = withBase('/');
 
   <style>
     .studio {
-      background: #060508;
+      background: var(--canvas);
     }
     @media (prefers-reduced-motion: reduce) {
       .studio-live {
