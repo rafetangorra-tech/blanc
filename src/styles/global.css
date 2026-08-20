@@ -7,8 +7,8 @@
 
 :root {
   --font-sans: "Inter Variable", system-ui, -apple-system, sans-serif;
-  /* One brand voice: Syne. Worlds differ by color + motion, not typeface. */
-  --font-display: "Syne Variable", var(--font-sans);
+  /* One brand voice: heavy grotesque (Arial Black). Worlds differ by color + motion, not typeface. */
+  --font-display: "Arial Black", "Arial Bold", "Helvetica Neue", Arial, sans-serif;
   --font-house: var(--font-display);
   --font-golden: var(--font-display);
   --font-velvet: var(--font-display);
@@ -59,8 +59,8 @@ h3,
 .font-golden,
 .font-velvet {
   font-family: var(--font-display);
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-weight: 900;
+  letter-spacing: -0.03em;
 }
 
 /* ---- Reveal system ----
