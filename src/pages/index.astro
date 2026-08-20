@@ -395,51 +395,56 @@ const collageCovers = allCovers.length
 
       // ---- The blank page transforms: pin the intro and let scroll pour
       // the three worlds' materials onto the BLANC letters. Backward strips
-      // them clean. Text wordmark stays until the video is truly ready.
+      // them clean.
+      //
+      // IMPORTANT: this pin is created HERE, synchronously, BEFORE the world
+      // pins — pinned ScrollTriggers must be registered in document order or
+      // every section below gets stale scroll math (blank-void bug). The
+      // video merely swaps in visually whenever it finishes loading.
       const wmVideo = document.getElementById('wordmark-video') as HTMLVideoElement | null;
       const wmText = document.querySelector<HTMLElement>('#wordmark span');
       if (wmVideo?.dataset.src) {
         wmVideo.src = wmVideo.dataset.src;
+
+        // Seek manager: never stack seeks — while the browser is mid-seek,
+        // remember only the latest target and apply it on 'seeked'.
+        let pendingSeek: number | null = null;
+        const seekTo = (t: number) => {
+          if (wmVideo.seeking) {
+            pendingSeek = t;
+          } else {
+            wmVideo.currentTime = t;
+          }
+        };
+        wmVideo.addEventListener('seeked', () => {
+          if (pendingSeek !== null) {
+            const t = pendingSeek;
+            pendingSeek = null;
+            wmVideo.currentTime = t;
+          }
+        });
+
+        ScrollTrigger.create({
+          trigger: '#intro',
+          start: 'top top',
+          end: '+=250%',
+          pin: true,
+          scrub: true,
+          anticipatePin: 1,
+          onUpdate: (self) => {
+            if (wmVideo.readyState >= 2 && wmVideo.duration) {
+              // Melt completes at 50% of the pin — the entire second half
+              // holds the finished drip before the page releases and the
+              // intro raises up into House World.
+              const p = Math.min(1, self.progress / 0.5);
+              seekTo(Math.min(wmVideo.duration - 0.04, p * wmVideo.duration));
+            }
+          },
+        });
+
         wmVideo.addEventListener('loadeddata', () => {
           wmVideo.classList.remove('hidden');
           if (wmText) wmText.style.display = 'none';
-
-          // Seek manager: never stack seeks — while the browser is mid-seek,
-          // remember only the latest target and apply it on 'seeked'. This is
-          // what keeps the displayed frame honest during fast scrolling.
-          let pendingSeek: number | null = null;
-          const seekTo = (t: number) => {
-            if (wmVideo.seeking) {
-              pendingSeek = t;
-            } else {
-              wmVideo.currentTime = t;
-            }
-          };
-          wmVideo.addEventListener('seeked', () => {
-            if (pendingSeek !== null) {
-              const t = pendingSeek;
-              pendingSeek = null;
-              wmVideo.currentTime = t;
-            }
-          });
-
-          ScrollTrigger.create({
-            trigger: '#intro',
-            start: 'top top',
-            end: '+=250%',
-            pin: true,
-            scrub: true,
-            anticipatePin: 1,
-            onUpdate: (self) => {
-              if (wmVideo.readyState >= 2 && wmVideo.duration) {
-                // Melt completes at 50% of the pin — the entire second half
-                // holds the finished drip, guaranteeing the end is reached
-                // (and seen) before the page releases.
-                const p = Math.min(1, self.progress / 0.5);
-                seekTo(Math.min(wmVideo.duration - 0.04, p * wmVideo.duration));
-              }
-            },
-          });
           ScrollTrigger.refresh();
         });
       }
