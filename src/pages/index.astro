@@ -187,6 +187,16 @@ const collageCovers = allCovers.length
           Three writers. One blank page.
         </h2>
 
+        <!-- group portrait — blends into the canvas -->
+        <div class="reveal group-photo relative mx-auto mt-12 max-w-4xl">
+          <img
+            src={withBase('/members/blanc-group.jpg')}
+            alt="blanc — Nick Tangorra, Jacqueline Tangorra, and Rafe Tangorra"
+            class="w-full"
+            data-speed="0.85"
+          />
+        </div>
+
         <div class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {
             members.map((m) => (
@@ -323,15 +333,40 @@ const collageCovers = allCovers.length
       gsap.utils.toArray('.world').forEach((section) => {
         const el = section as HTMLElement;
 
-        // staggered content reveal
+        // staggered content reveal — reverses when you scroll back up
         gsap.to(el.querySelectorAll('.reveal'), {
           opacity: 1,
           y: 0,
           duration: 1,
           ease: 'power3.out',
           stagger: 0.1,
-          scrollTrigger: { trigger: el, start: 'top 68%' },
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 68%',
+            toggleActions: 'play none none reverse',
+          },
         });
+
+        // planet scrubs in with the scroll — grows/settles as the world arrives,
+        // shrinks back as you leave. Fully tied to scroll position.
+        const planetWrap = el.querySelector('a[aria-label^="Enter"]');
+        if (planetWrap) {
+          gsap.fromTo(
+            planetWrap,
+            { scale: 0.55, opacity: 0.3 },
+            {
+              scale: 1,
+              opacity: 1,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: el,
+                start: 'top 85%',
+                end: 'center center',
+                scrub: 0.6,
+              },
+            }
+          );
+        }
 
         // parallax layers
         el.querySelectorAll('[data-speed]').forEach((layer) => {
@@ -363,24 +398,32 @@ const collageCovers = allCovers.length
         });
       });
 
-      // Collective section reveal
+      // Collective section reveal — reversible
       gsap.to('#collective .reveal', {
         opacity: 1,
         y: 0,
         duration: 1,
         ease: 'power3.out',
         stagger: 0.08,
-        scrollTrigger: { trigger: '#collective', start: 'top 75%' },
+        scrollTrigger: {
+          trigger: '#collective',
+          start: 'top 75%',
+          toggleActions: 'play none none reverse',
+        },
       });
 
-      // Booking section reveal
+      // Booking section reveal — reversible
       gsap.to('#booking .reveal', {
         opacity: 1,
         y: 0,
         duration: 1,
         ease: 'power3.out',
         stagger: 0.1,
-        scrollTrigger: { trigger: '#booking', start: 'top 70%' },
+        scrollTrigger: {
+          trigger: '#booking',
+          start: 'top 70%',
+          toggleActions: 'play none none reverse',
+        },
       });
 
       // ---- Scroll progress bar ----

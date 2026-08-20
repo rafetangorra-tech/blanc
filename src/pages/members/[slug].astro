@@ -218,7 +218,6 @@ const BASE = '#0a0a0c';
       gsap.set('.reveal', { y: 28 });
       ScrollTrigger.batch('.reveal', {
         start: 'top 88%',
-        once: true,
         onEnter: (els) =>
           gsap.to(els, {
             opacity: 1,
@@ -226,6 +225,15 @@ const BASE = '#0a0a0c';
             duration: 1,
             ease: 'power3.out',
             stagger: 0.08,
+            overwrite: true,
+          }),
+        onLeaveBack: (els) =>
+          gsap.to(els, {
+            opacity: 0,
+            y: 28,
+            duration: 0.5,
+            ease: 'power2.in',
+            overwrite: true,
           }),
       });
 

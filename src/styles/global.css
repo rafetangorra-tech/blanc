@@ -133,6 +133,12 @@ html.lenis body {
   display: block;
 }
 
+/* Group portrait — soft-edge mask so the cream photo melts into the canvas */
+.group-photo img {
+  -webkit-mask-image: radial-gradient(120% 100% at 50% 45%, #000 55%, transparent 92%);
+  mask-image: radial-gradient(120% 100% at 50% 45%, #000 55%, transparent 92%);
+}
+
 /* Hide scrollbars but keep scrollability */
 .no-bar {
   scrollbar-width: none;
