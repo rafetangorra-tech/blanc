@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import DripEdge from '../components/DripEdge.astro';
+import VideoSeam from '../components/VideoSeam.astro';
 import { site, worlds, members, initials } from '../data/site';
 import { withBase } from '../lib/url';
 
@@ -105,8 +105,8 @@ const CANVAS = '#f7f6f4';
           data-accent={w.accent}
           style={`background:${w.bg}; color:${w.ink};`}
         >
-          {/* the previous world melts into this one — each edge grown unique */}
-          <DripEdge color={wi === 0 ? CANVAS : worlds[wi - 1].bg} seed={17 + wi * 23} />
+          {/* the previous world's color pours into this one — living liquid */}
+          <VideoSeam id={wi + 1} above={wi === 0 ? CANVAS : worlds[wi - 1].bg} below={w.bg} />
           {/* ambient glow */}
           <div
             class="pointer-events-none absolute inset-0"
@@ -207,8 +207,11 @@ const CANVAS = '#f7f6f4';
       class="relative overflow-hidden py-28"
       style="background: var(--canvas); color: var(--canvas-ink);"
     >
-      <DripEdge color="#150609" seed={101} />
-      <div class="mx-auto max-w-6xl px-6 pt-8 sm:px-10">
+      <VideoSeam id={4} above="#150609" below={CANVAS} />
+      <div
+        class="mx-auto max-w-6xl px-6 sm:px-10"
+        style="padding-top: clamp(4rem, 16vw, 18rem);"
+      >
         <p class="reveal text-xs uppercase tracking-[0.4em] text-black/40">
           the collective
         </p>
@@ -305,8 +308,8 @@ const CANVAS = '#f7f6f4';
       class="relative flex min-h-[80vh] items-center justify-center overflow-hidden px-6 py-24 text-center"
       style="background: var(--canvas-ink); color: var(--canvas);"
     >
-      <DripEdge color={CANVAS} seed={137} />
-      <div class="max-w-2xl pt-10">
+      <VideoSeam id={5} above={CANVAS} below="#0a0a0a" />
+      <div class="max-w-2xl" style="padding-top: clamp(4rem, 16vw, 18rem);">
         <!-- the three worlds, together -->
         <div class="reveal mb-8 flex items-end justify-center gap-4" aria-hidden="true">
           {

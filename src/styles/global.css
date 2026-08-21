@@ -121,7 +121,8 @@ h3,
   object-fit: contain;
 }
 @media (prefers-reduced-motion: reduce) {
-  .planet-video {
+  .planet-video,
+  .seam-live {
     display: none;
   }
 }
