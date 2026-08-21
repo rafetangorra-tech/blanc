@@ -1,15 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { site, worlds, members, initials, tracks } from '../data/site';
+import DripEdge from '../components/DripEdge.astro';
+import { site, worlds, members, initials } from '../data/site';
 import { withBase } from '../lib/url';
 
 const year = new Date().getFullYear();
-
-// Faded album-art collage — a mosaic of every cover, shown behind each world.
-const allCovers = tracks.filter((t) => t.artwork).map((t) => t.artwork as string);
-const collageCovers = allCovers.length
-  ? Array.from({ length: 60 }, (_, i) => allCovers[i % allCovers.length])
-  : [];
+const CANVAS = '#f7f6f4';
 ---
 
 <BaseLayout>
@@ -102,23 +98,20 @@ const collageCovers = allCovers.length
 
     <!-- ============ WORLDS ============ -->
     {
-      worlds.map((w) => (
+      worlds.map((w, wi) => (
         <section
           id={w.id}
           class="world relative flex min-h-screen items-center overflow-hidden px-6 py-24 sm:px-10"
           data-accent={w.accent}
           style={`background:${w.bg}; color:${w.ink};`}
         >
-          {/* faded album-art collage */}
-          <div class="collage-section" aria-hidden="true">
-            {collageCovers.map((src) => <img src={withBase(`/${src}`)} alt="" loading="lazy" />)}
-          </div>
-          {/* tint + glow */}
+          {/* the previous world melts into this one */}
+          <DripEdge color={wi === 0 ? CANVAS : worlds[wi - 1].bg} />
+          {/* ambient glow */}
           <div
             class="pointer-events-none absolute inset-0"
             aria-hidden="true"
             style={`background:
-              linear-gradient(${w.bg}e0, ${w.bg}ee 55%, ${w.bg}f7),
               radial-gradient(60% 60% at 72% 28%, ${w.accent}26, transparent 70%),
               radial-gradient(50% 50% at 18% 82%, ${w.accent2}1f, transparent 70%);`}
           />
@@ -211,10 +204,11 @@ const collageCovers = allCovers.length
     <!-- ============ THE COLLECTIVE ============ -->
     <section
       id="collective"
-      class="relative py-28"
+      class="relative overflow-hidden py-28"
       style="background: var(--canvas); color: var(--canvas-ink);"
     >
-      <div class="mx-auto max-w-6xl px-6 sm:px-10">
+      <DripEdge color="#150609" />
+      <div class="mx-auto max-w-6xl px-6 pt-8 sm:px-10">
         <p class="reveal text-xs uppercase tracking-[0.4em] text-black/40">
           the collective
         </p>
@@ -270,34 +264,30 @@ const collageCovers = allCovers.length
             members.map((m) => (
               <a
                 href={withBase(`/members/${m.slug}`)}
-                class="reveal group relative overflow-hidden rounded-2xl border border-black/10 p-6 transition-colors hover:border-black/30"
+                class="reveal group border-t-2 pt-5 transition-colors"
+                style={`border-color:${m.accent};`}
               >
                 <div
-                  class="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100"
-                  style={`background:${m.accent}`}
-                  aria-hidden="true"
-                />
-                <div
-                  class="flex h-40 items-center justify-center rounded-xl"
-                  style={`background:${m.accent}12; color:${m.accent};`}
+                  class="flex h-44 items-center justify-center overflow-hidden"
+                  style={m.photo ? '' : 'background:#0a0a0a;'}
                 >
                   {m.photo ? (
                     <img
                       src={withBase(`/${m.photo}`)}
                       alt={m.name}
-                      class="h-full w-full rounded-xl object-cover object-[center_20%]"
+                      class="h-full w-full object-cover object-[center_20%] transition-transform duration-700 ease-out group-hover:scale-[1.03]"
                       loading="lazy"
                     />
                   ) : (
-                    <span class="font-golden text-5xl">{initials(m.name)}</span>
+                    <span class="text-6xl text-white" style="font-family: var(--font-display); font-variation-settings: 'wdth' 125;">
+                      {initials(m.name)}
+                    </span>
                   )}
                 </div>
-                <h3 class="mt-5 text-2xl font-semibold tracking-tight">
-                  {m.name}
-                </h3>
+                <h3 class="mt-5 text-2xl tracking-tight">{m.name}</h3>
                 <p class="mt-1 text-sm text-black/50">{m.role}</p>
                 <span
-                  class="mt-4 inline-block text-xs uppercase tracking-[0.2em]"
+                  class="mt-3 inline-block text-xs uppercase tracking-[0.2em] transition-transform group-hover:translate-x-1"
                   style={`color:${m.accent}`}
                 >
                   View page →
@@ -312,10 +302,25 @@ const collageCovers = allCovers.length
     <!-- ============ BOOKING / CONTACT ============ -->
     <section
       id="booking"
-      class="relative flex min-h-[80vh] items-center justify-center px-6 py-24 text-center"
+      class="relative flex min-h-[80vh] items-center justify-center overflow-hidden px-6 py-24 text-center"
       style="background: var(--canvas-ink); color: var(--canvas);"
     >
-      <div class="max-w-2xl">
+      <DripEdge color={CANVAS} />
+      <div class="max-w-2xl pt-10">
+        <!-- the three worlds, together -->
+        <div class="reveal mb-8 flex items-end justify-center gap-4" aria-hidden="true">
+          {
+            worlds.map((w) => (
+              <img
+                src={withBase(`/${w.planet}`)}
+                alt=""
+                loading="lazy"
+                class="planet w-16 sm:w-20"
+                style="animation-delay: calc(-3s * var(--i, 0));"
+              />
+            ))
+          }
+        </div>
         <p class="reveal text-xs uppercase tracking-[0.4em] text-white/40">
           work with blanc
         </p>
@@ -336,10 +341,15 @@ const collageCovers = allCovers.length
     </section>
 
     <footer
-      class="flex flex-col items-center justify-between gap-3 px-6 py-8 text-xs text-black/40 sm:flex-row"
+      class="flex flex-col items-center gap-5 px-6 pb-8 pt-12 text-xs text-black/40"
       style="background: var(--canvas);"
     >
-      <span class="lowercase tracking-[0.2em]">blanc</span>
+      <img
+        src={withBase('/blanc-drip-logo.jpg')}
+        alt="blanc"
+        loading="lazy"
+        class="w-40 sm:w-48"
+      />
       <span>© {year} blanc — one group. many worlds.</span>
     </footer>
   </main>
