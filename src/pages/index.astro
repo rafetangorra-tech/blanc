@@ -105,8 +105,8 @@ const CANVAS = '#f7f6f4';
           data-accent={w.accent}
           style={`background:${w.bg}; color:${w.ink};`}
         >
-          {/* the previous world melts into this one */}
-          <DripEdge color={wi === 0 ? CANVAS : worlds[wi - 1].bg} />
+          {/* the previous world melts into this one — each edge grown unique */}
+          <DripEdge color={wi === 0 ? CANVAS : worlds[wi - 1].bg} seed={17 + wi * 23} />
           {/* ambient glow */}
           <div
             class="pointer-events-none absolute inset-0"
@@ -207,7 +207,7 @@ const CANVAS = '#f7f6f4';
       class="relative overflow-hidden py-28"
       style="background: var(--canvas); color: var(--canvas-ink);"
     >
-      <DripEdge color="#150609" />
+      <DripEdge color="#150609" seed={101} />
       <div class="mx-auto max-w-6xl px-6 pt-8 sm:px-10">
         <p class="reveal text-xs uppercase tracking-[0.4em] text-black/40">
           the collective
@@ -305,7 +305,7 @@ const CANVAS = '#f7f6f4';
       class="relative flex min-h-[80vh] items-center justify-center overflow-hidden px-6 py-24 text-center"
       style="background: var(--canvas-ink); color: var(--canvas);"
     >
-      <DripEdge color={CANVAS} />
+      <DripEdge color={CANVAS} seed={137} />
       <div class="max-w-2xl pt-10">
         <!-- the three worlds, together -->
         <div class="reveal mb-8 flex items-end justify-center gap-4" aria-hidden="true">
