@@ -11,8 +11,10 @@
 interface Props {
   color: string;
   seed?: number;
+  attach?: 'top' | 'bottom'; // 'bottom' hangs the fringe below a curtain
 }
-const { color, seed = 1 } = Astro.props;
+const { color, seed = 1, attach = 'top' } = Astro.props;
+const place = attach === 'bottom' ? 'top:100%;' : 'top:-1px;';
 
 // deterministic PRNG (mulberry32) so each edge is stable across builds
 function mulberry32(a: number) {
@@ -76,7 +78,7 @@ d += ` C${(x + (W - x) * 0.4).toFixed(0)} ${(y + R(-6, 6)).toFixed(1)} ${(W - 30
   viewBox={`0 0 ${W} ${H}`}
   preserveAspectRatio="none"
   aria-hidden="true"
-  style="position:absolute; top:-1px; left:0; width:100%; height:clamp(56px, 8vw, 96px); z-index:15; pointer-events:none; display:block;"
+  style={`position:absolute; ${place} left:0; width:100%; height:clamp(56px, 8vw, 96px); pointer-events:none; display:block;`}
 >
   <path fill={color} d={d}></path>
   <Fragment set:html={droplets.join('')} />

@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import VideoSeam from '../components/VideoSeam.astro';
+import DripEdge from '../components/DripEdge.astro';
 import { site, worlds, members, initials } from '../data/site';
 import { withBase } from '../lib/url';
 
@@ -105,8 +105,15 @@ const CANVAS = '#f7f6f4';
           data-accent={w.accent}
           style={`background:${w.bg}; color:${w.ink};`}
         >
-          {/* the previous world's color pours into this one — living liquid */}
-          <VideoSeam id={wi + 1} above={wi === 0 ? CANVAS : worlds[wi - 1].bg} below={w.bg} />
+          {/* melt curtain: you arrive covered in the previous world's color —
+              scrolling melts it down and away, drips trailing off-screen */}
+          <div
+            class="melt-curtain"
+            aria-hidden="true"
+            style={`position:absolute; left:0; top:0; width:100%; height:100%; z-index:30; pointer-events:none; background:${wi === 0 ? CANVAS : worlds[wi - 1].bg}; will-change:transform;`}
+          >
+            <DripEdge color={wi === 0 ? CANVAS : worlds[wi - 1].bg} seed={17 + wi * 23} attach="bottom" />
+          </div>
           {/* ambient glow */}
           <div
             class="pointer-events-none absolute inset-0"
@@ -207,11 +214,14 @@ const CANVAS = '#f7f6f4';
       class="relative overflow-hidden py-28"
       style="background: var(--canvas); color: var(--canvas-ink);"
     >
-      <VideoSeam id={4} above="#150609" below={CANVAS} />
       <div
-        class="relative z-10 mx-auto max-w-6xl px-6 sm:px-10"
-        style="padding-top: clamp(4rem, 20vw, 22rem);"
+        class="melt-curtain"
+        aria-hidden="true"
+        style="position:absolute; left:0; top:0; width:100%; height:100%; z-index:30; pointer-events:none; background:#150609; will-change:transform;"
       >
+        <DripEdge color="#150609" seed={101} attach="bottom" />
+      </div>
+      <div class="relative z-10 mx-auto max-w-6xl px-6 pt-8 sm:px-10">
         <p class="reveal text-xs uppercase tracking-[0.4em] text-black/40">
           the collective
         </p>
@@ -308,8 +318,14 @@ const CANVAS = '#f7f6f4';
       class="relative flex min-h-[80vh] items-center justify-center overflow-hidden px-6 py-24 text-center"
       style="background: var(--canvas-ink); color: var(--canvas);"
     >
-      <VideoSeam id={5} above={CANVAS} below="#0a0a0a" />
-      <div class="relative z-10 max-w-2xl" style="padding-top: clamp(4rem, 20vw, 22rem);">
+      <div
+        class="melt-curtain"
+        aria-hidden="true"
+        style={`position:absolute; left:0; top:0; width:100%; height:100%; z-index:30; pointer-events:none; background:${CANVAS}; will-change:transform;`}
+      >
+        <DripEdge color={CANVAS} seed={137} attach="bottom" />
+      </div>
+      <div class="relative z-10 max-w-2xl pt-10">
         <!-- the three worlds, together -->
         <div class="reveal mb-8 flex items-end justify-center gap-4" aria-hidden="true">
           {
@@ -600,8 +616,14 @@ const CANVAS = '#f7f6f4';
       // ---- ULTRA reactive: pin each world; scroll drives BOTH the orb's spin
       // and the mix-in of every text layer. Forward builds the mix, backward
       // strips it — the scrollbar is the fader.
+      // reveal the melt curtains only when the scroll engine is driving
+      document
+        .querySelectorAll<HTMLElement>('.melt-curtain')
+        .forEach((c) => (c.style.display = 'block'));
+
       gsap.utils.toArray<HTMLElement>('.world').forEach((el) => {
         const vid = el.querySelector<HTMLVideoElement>('video[data-scrub]');
+        const curtain = el.querySelector<HTMLElement>('.melt-curtain');
         const label = el.querySelector('[data-wtext="label"]');
         const title = el.querySelector('[data-wtext="title"]');
         const blurb = el.querySelector('[data-wtext="blurb"]');
@@ -627,24 +649,42 @@ const CANVAS = '#f7f6f4';
           },
         });
 
-        // The mix builds channel by channel across the first half of the pin;
-        // the orb keeps spinning through all of it.
+        // Act 1 — the previous world melts down and away (drips trailing)
+        if (curtain)
+          tl.to(curtain, { yPercent: 130, duration: 0.2, ease: 'none' }, 0);
+        // Act 2 — the mix builds channel by channel; the orb spins throughout
         if (label)
-          tl.fromTo(label, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.1 }, 0.02);
+          tl.fromTo(label, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.1 }, 0.2);
         if (title)
           tl.fromTo(
             title,
             { opacity: 0, y: 70, scale: 0.96 },
             { opacity: 1, y: 0, scale: 1, duration: 0.18 },
-            0.07
+            0.24
           );
         if (blurb)
-          tl.fromTo(blurb, { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.14 }, 0.18);
+          tl.fromTo(blurb, { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.14 }, 0.32);
         if (cta)
-          tl.fromTo(cta, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.14 }, 0.28);
-        // spacer so the mix completes by ~45% and the rest of the pin is pure spin
-        tl.to({ v: 0 }, { v: 1, duration: 0.55, ease: 'none' }, 0.45);
+          tl.fromTo(cta, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.14 }, 0.4);
+        // spacer so the mix completes and the rest of the pin is pure spin
+        tl.to({ v: 0 }, { v: 1, duration: 0.45, ease: 'none' }, 0.55);
       });
+
+      // Collective + booking melt in as they arrive (scrubbed, unpinned)
+      gsap
+        .utils.toArray<HTMLElement>('#collective .melt-curtain, #booking .melt-curtain')
+        .forEach((c) => {
+          gsap.to(c, {
+            yPercent: 130,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: c.closest('section'),
+              start: 'top 60%',
+              end: 'top 2%',
+              scrub: 0.4,
+            },
+          });
+        });
 
       // ---- Scroll progress bar ----
       gsap.to('#progress', {

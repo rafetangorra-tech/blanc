@@ -73,6 +73,11 @@ h3,
   will-change: transform, opacity;
 }
 
+/* Melt curtains hidden until the scroll engine takes over (no-JS / reduced-motion safe) */
+.melt-curtain {
+  display: none;
+}
+
 /* Liquid-fill button hover — the world's color pours down into the button */
 .btn-drip {
   position: relative;
