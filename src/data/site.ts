@@ -40,6 +40,7 @@ export type Member = {
   bio: string; // short bio — placeholder ok, rewrite in the group's voice
   photo?: string; // primary portrait (hero + homepage card); omit for initials placeholder
   bgPhoto?: string; // full-bleed, faded hero background image
+  heroVideo?: string; // scroll-scrubbed "liquid development" video for the artist-page hero
   gallery?: string[]; // extra photos shown in a gallery strip
   links?: { label: string; href: string }[];
 };
@@ -58,6 +59,7 @@ In blanc, Rafe is the studio brain — the producer and multi-instrumentalist wh
 Ask what he’s after and the answer is simple: it has to make you move. High-energy on stage and relentless behind the console, Rafe builds records with one job — to hit you in the body before you’ve had time to think.`,
     photo: 'members/rafe-tangorra.jpg',
     bgPhoto: 'members/rafe-live.jpg',
+    heroVideo: 'members/rafe-develop.mp4',
     gallery: [
       'members/rafe-drums.jpg',
       'members/rafe-guitar.jpg',

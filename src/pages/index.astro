@@ -361,13 +361,14 @@ const CANVAS = '#f7f6f4';
 
     <footer
       class="flex flex-col items-center gap-5 px-6 pb-8 pt-12 text-xs text-black/40"
-      style="background: var(--canvas);"
+      style="background: #ecece4;"
     >
       <img
         src={withBase('/blanc-drip-logo.jpg')}
         alt="blanc"
         loading="lazy"
         class="w-40 sm:w-48"
+        style="-webkit-mask-image: radial-gradient(120% 120% at 50% 50%, #000 55%, transparent 96%); mask-image: radial-gradient(120% 120% at 50% 50%, #000 55%, transparent 96%);"
       />
       <span>© {year} blanc — one group. many worlds.</span>
     </footer>

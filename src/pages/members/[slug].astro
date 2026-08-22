@@ -42,12 +42,24 @@ const gallery = member.gallery ?? [];
       >
         {
           member.bgPhoto ? (
-            <img
-              id="mhero-bg"
-              src={withBase(`/${member.bgPhoto}`)}
-              alt=""
-              class="h-full w-full object-cover object-center"
-            />
+            <Fragment>
+              <img
+                id="mhero-bg"
+                src={withBase(`/${member.bgPhoto}`)}
+                alt=""
+                class="h-full w-full object-cover object-center"
+              />
+              {member.heroVideo && (
+                <video
+                  id="mhero-dev"
+                  class="absolute inset-0 hidden h-full w-full object-cover"
+                  muted
+                  playsinline
+                  preload="auto"
+                  data-src={withBase(`/${member.heroVideo}`)}
+                ></video>
+              )}
+            </Fragment>
           ) : (
             <div
               id="mhero-bg"
@@ -209,12 +221,14 @@ const gallery = member.gallery ?? [];
 
     <footer
       class="flex flex-col items-center gap-5 border-t border-black/10 px-6 pb-8 pt-12 text-xs text-black/40"
+      style="background: #ecece4;"
     >
       <img
         src={withBase('/blanc-drip-logo.jpg')}
         alt="blanc"
         loading="lazy"
         class="w-40 sm:w-48"
+        style="-webkit-mask-image: radial-gradient(120% 120% at 50% 50%, #000 55%, transparent 96%); mask-image: radial-gradient(120% 120% at 50% 50%, #000 55%, transparent 96%);"
       />
       <span>© {new Date().getFullYear()} blanc — one group. many worlds.</span>
     </footer>
@@ -236,46 +250,86 @@ const gallery = member.gallery ?? [];
       gsap.ticker.add((time) => lenis.raf(time * 1000));
       gsap.ticker.lagSmoothing(0);
 
-      // ---- Hero: pinned mix-in, same grammar as the worlds ----
+      // ---- Hero: pinned two-act cinema ----
+      // Act 1 (with heroVideo): the blank canvas DEVELOPS — liquid gold/
+      // chrome/velvet pours down and reveals the photograph, scrubbed to
+      // your scroll. Act 2: the identity stamps in channel by channel.
       const label = document.querySelector('[data-mh="label"]');
       const title = document.querySelector('[data-mh="title"]');
       const role = document.querySelector('[data-mh="role"]');
       const tags = document.querySelector('[data-mh="tags"]');
       const cue = document.querySelector('[data-mh="cue"]');
       const bg = document.getElementById('mhero-bg');
+      const dev = document.getElementById('mhero-dev') as HTMLVideoElement | null;
 
-      // the photo is alive immediately; the name builds with your scroll
       if (cue) gsap.set(cue, { opacity: 1 });
+
+      let devReady = false;
+      let pendingSeek: number | null = null;
+      if (dev?.dataset.src) {
+        dev.src = dev.dataset.src;
+        dev.addEventListener('loadeddata', () => {
+          dev.classList.remove('hidden');
+          if (bg) (bg as HTMLElement).style.display = 'none';
+          devReady = true;
+          ScrollTrigger.refresh();
+        });
+        dev.addEventListener('seeked', () => {
+          if (pendingSeek !== null) {
+            const t = pendingSeek;
+            pendingSeek = null;
+            dev.currentTime = t;
+          }
+        });
+      }
+      const seekDev = (t: number) => {
+        if (!dev) return;
+        if (dev.seeking) pendingSeek = t;
+        else dev.currentTime = t;
+      };
+
+      const hasDev = !!dev?.dataset.src;
+      // channel timings: development owns the first half when present
+      const T = hasDev
+        ? { label: 0.56, title: 0.6, role: 0.74, tags: 0.82, cueOut: 0.5 }
+        : { label: 0.04, title: 0.1, role: 0.26, tags: 0.34, cueOut: 0.3 };
 
       const tl = gsap.timeline({
         defaults: { ease: 'power2.out' },
         scrollTrigger: {
           trigger: '#mhero',
           start: 'top top',
-          end: '+=120%',
+          end: hasDev ? '+=170%' : '+=120%',
           pin: true,
           scrub: 0.4,
           anticipatePin: 1,
+          onUpdate: (self) => {
+            if (hasDev && devReady && dev && dev.duration) {
+              // development completes at 55% of the pin
+              const p = Math.min(1, self.progress / 0.55);
+              seekDev(Math.min(dev.duration - 0.04, p * dev.duration));
+            }
+          },
         },
       });
 
-      if (bg)
+      if (bg && !hasDev)
         tl.fromTo(bg, { scale: 1.14 }, { scale: 1, ease: 'none', duration: 0.6 }, 0);
       if (label)
-        tl.fromTo(label, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.1 }, 0.04);
+        tl.fromTo(label, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.1 }, T.label);
       if (title)
         tl.fromTo(
           title,
           { opacity: 0, y: 80, scale: 0.97 },
           { opacity: 1, y: 0, scale: 1, duration: 0.2 },
-          0.1
+          T.title
         );
       if (role)
-        tl.fromTo(role, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.12 }, 0.26);
+        tl.fromTo(role, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.12 }, T.role);
       if (tags)
-        tl.fromTo(tags, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.12 }, 0.34);
-      if (cue) tl.to(cue, { opacity: 0, duration: 0.08 }, 0.3);
-      tl.to({ v: 0 }, { v: 1, duration: 0.5, ease: 'none' }, 0.5);
+        tl.fromTo(tags, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.12 }, T.tags);
+      if (cue) tl.to(cue, { opacity: 0, duration: 0.08 }, T.cueOut);
+      tl.to({ v: 0 }, { v: 1, duration: 0.06, ease: 'none' }, 0.94);
 
       // ---- Color floods: portrait + gallery drain in, flood to color ----
       gsap.utils.toArray<HTMLElement>('.flood-media').forEach((m) => {
