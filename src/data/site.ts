@@ -39,6 +39,7 @@ export type Member = {
   accent: string; // page accent; falls back to canvas ink if you like
   bio: string; // short bio — placeholder ok, rewrite in the group's voice
   photo?: string; // primary portrait (hero + homepage card); omit for initials placeholder
+  cardOrigin?: string; // transform-origin for the homepage card's face-zoom crop
   bgPhoto?: string; // full-bleed, faded hero background image
   heroVideo?: string; // scroll-scrubbed "liquid development" video for the artist-page hero
   gallery?: string[]; // extra photos shown in a gallery strip
@@ -58,6 +59,7 @@ In blanc, Rafe is the studio brain — the producer and multi-instrumentalist wh
 
 Ask what he’s after and the answer is simple: it has to make you move. High-energy on stage and relentless behind the console, Rafe builds records with one job — to hit you in the body before you’ve had time to think.`,
     photo: 'members/rafe-tangorra.jpg',
+    cardOrigin: '59% 32%',
     bgPhoto: 'members/rafe-live.jpg',
     heroVideo: 'members/rafe-develop.mp4',
     gallery: [
@@ -72,12 +74,16 @@ Ask what he’s after and the answer is simple: it has to make you move. High-en
     role: 'the voice of blanc',
     worlds: ['house', 'golden'],
     accent: '#C7761F',
+    photo: 'members/nick-tangorra.jpg',
+    cardOrigin: '47% 24%',
+    bgPhoto: 'members/nick-hero.jpg',
+    heroVideo: 'members/nick-develop.mp4',
+    gallery: ['members/nick-stage.jpg', 'members/nick-street.jpg'],
     bio: `Nick Tangorra has been the voice in the room since he was a teenager on Long Island, fronting the Nick Tangorra Band — the group he built with his brother Rafe — and turning a self-made single called “Boo Hoo” into 28 million streams. The rooms got bigger fast: writing sessions with Toby Gad, Lindy Robbins, and Steve Kipner, and stages shared with Fifth Harmony, Shawn Mendes, and Meghan Trainor. Born entertainer isn’t a figure of speech here. It’s the job description.
 
 In blanc, Nick is the voice — all of it. Melodies pour out of him faster than the sessions can catch them, and then the craftsman takes over: stacking, comping, chasing the take until it’s undeniable. What comes out is a tone you recognize in one note, elastic enough to live in two worlds at once — smooth and hypnotic when it floats over House World’s pulse, close enough to whisper when Golden World asks for the truth.
 
 And under all of it is the oldest partnership in the group: two brothers who’ve been writing songs in the same room for over a decade. Rafe builds the worlds; Nick makes you believe them. Put him in front of a crowd and you’ll see the rest — some people learn to hold a room. Nick was built for it.`,
-    // photo: 'members/nick-tangorra.jpg',
   },
   {
     slug: 'jacqueline-tangorra',
@@ -90,7 +96,7 @@ And under all of it is the oldest partnership in the group: two brothers who’v
 In blanc, Jacqueline is the pen. She writes the line you rewind — the one that arrives in the second verse and quietly takes the whole song hostage. Golden World is where her handwriting shows most: unfiltered, diary-close detail, names-and-places honesty, the gut-punch delivered gently. And when the collective goes after House World’s pulse, she’s the reason there’s a story worth dancing to underneath it.
 
 She’s also family — married to Rafe, which makes blanc less a project and more a household: her words, his worlds, Nick’s voice. Three writers passing the same truth around the room until it becomes a song. Somebody has to write down what the heart actually said. That’s Jacqueline’s job, and nobody does it with more love.`,
-    // photo: 'members/jacqueline-tangorra.jpg',
+    // photo: 'members/jacqueline-tangorra.jpg', // ← awaiting Jacqueline's photos
   },
 ];
 

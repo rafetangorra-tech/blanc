@@ -288,7 +288,8 @@ const CANVAS = '#f7f6f4';
                     <img
                       src={withBase(`/${m.photo}`)}
                       alt={m.name}
-                      class="h-full w-full scale-[1.6] object-cover object-[center_20%] origin-[59%_32%] transition-transform duration-700 ease-out group-hover:scale-[1.67]"
+                      class="h-full w-full scale-[1.6] object-cover object-[center_20%] transition-transform duration-700 ease-out group-hover:scale-[1.67]"
+                      style={`transform-origin:${m.cardOrigin ?? '50% 25%'};`}
                       loading="lazy"
                     />
                   ) : (
