@@ -14,7 +14,6 @@ const { member } = Astro.props;
 const homeHref = withBase('/');
 const memberWorlds = worlds.filter((w) => member.worlds.includes(w.id));
 const gallery = member.gallery ?? [];
-const BASE = '#0a0a0c';
 ---
 
 <BaseLayout
@@ -33,133 +32,153 @@ const BASE = '#0a0a0c';
     >
   </header>
 
-  <main class="relative text-white" style={`background:${BASE};`}>
-    <!-- ============ HERO — cinematic, faded photo background ============ -->
-    <section class="relative flex min-h-screen items-center overflow-hidden px-6 pb-20 pt-32 sm:px-10 lg:pt-40">
-      <!-- background layer -->
-      <div class="absolute inset-0" aria-hidden="true">
+  <main style="background: var(--canvas); color: var(--canvas-ink);">
+    <!-- ============ HERO — pinned scroll-cinema ============ -->
+    <section id="mhero" class="relative flex h-screen flex-col overflow-hidden">
+      <!-- cinematic photo, dissolving into the blank page -->
+      <div
+        class="relative h-[52vh] w-full overflow-hidden"
+        style="-webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 99%); mask-image: linear-gradient(to bottom, #000 55%, transparent 99%);"
+      >
         {
           member.bgPhoto ? (
             <img
+              id="mhero-bg"
               src={withBase(`/${member.bgPhoto}`)}
               alt=""
-              class="h-full w-full object-cover object-center opacity-55"
+              class="h-full w-full object-cover object-center"
             />
-          ) : null
+          ) : (
+            <div
+              id="mhero-bg"
+              class="flex h-full w-full items-center justify-center"
+              style={`background:${member.accent}14;`}
+            >
+              <span
+                class="text-[16vw] leading-none"
+                style={`color:${member.accent}; font-family:var(--font-display); font-variation-settings:'wdth' 125;`}
+              >
+                {initials(member.name)}
+              </span>
+            </div>
+          )
         }
-        <div
-          class="absolute inset-0"
-          style={`background:
-            linear-gradient(to bottom, ${BASE}66, ${BASE}cc 55%, ${BASE}),
-            radial-gradient(70% 60% at 78% 25%, ${member.accent}2e, transparent 70%);`}
-        >
-        </div>
       </div>
 
-      <div class="relative z-10 mx-auto grid w-full max-w-6xl gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-        <div>
-          <p
-            class="reveal text-xs uppercase tracking-[0.35em]"
-            style={`color:${member.accent}`}
-          >
-            blanc — the collective
-          </p>
-          <h1
-            class="reveal mt-4 text-6xl leading-[0.95] sm:text-7xl lg:text-8xl"
-          >
-            {member.name}
-          </h1>
-          <p class="reveal mt-4 text-lg text-white/60">{member.role}</p>
+      <!-- the name block, on the blank page -->
+      <div class="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center px-6 pb-16 sm:px-10">
+        <p
+          class="reveal text-xs uppercase tracking-[0.35em]"
+          data-mh="label"
+          style={`color:${member.accent}`}
+        >
+          blanc — the collective
+        </p>
+        <h1
+          class="reveal mt-3 text-[11vw] uppercase leading-[0.9] sm:text-[9vw] lg:text-[7.5rem]"
+          data-mh="title"
+        >
+          {member.name}
+        </h1>
+        <p class="reveal mt-4 text-lg text-black/55" data-mh="role">
+          {member.role}
+        </p>
+        {
+          memberWorlds.length > 0 && (
+            <div class="reveal mt-6 flex flex-wrap gap-2" data-mh="tags">
+              {memberWorlds.map((w) => (
+                <a
+                  href={`${homeHref}#${w.id}`}
+                  class="btn-drip rounded-full border px-4 py-1.5 text-xs uppercase tracking-[0.15em]"
+                  style={`border-color:${w.accent}66; color:${w.accent}; --drip:${w.accent}; --drip-ink:${w.bg};`}
+                >
+                  {w.name}
+                </a>
+              ))}
+            </div>
+          )
+        }
+      </div>
 
-          {
-            memberWorlds.length > 0 && (
-              <div class="reveal mt-6 flex flex-wrap gap-2">
-                {memberWorlds.map((w) => (
-                  <a
-                    href={`${homeHref}#${w.id}`}
-                    class="rounded-full border px-3 py-1 text-xs uppercase tracking-[0.15em] transition-colors hover:bg-white/5"
-                    style={`border-color:${w.accent}66; color:${w.accent};`}
-                  >
-                    {w.name}
-                  </a>
-                ))}
-              </div>
-            )
-          }
-        </div>
+      <div
+        class="scroll-cue absolute bottom-8 left-1/2 z-10 -translate-x-1/2 text-xs uppercase tracking-[0.3em] text-black/40"
+        data-mh="cue"
+      >
+        <span class="block">scroll</span>
+      </div>
+    </section>
 
-        <!-- portrait — large centerpiece, shown full -->
-        <div class="reveal relative">
+    <!-- ============ BIO — sticky portrait floods into color ============ -->
+    <section class="mx-auto grid max-w-6xl gap-12 px-6 py-24 sm:px-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
+      <div class="lg:sticky lg:top-24 lg:self-start">
+        <div class="flood-media relative overflow-hidden rounded-2xl">
           {
             member.photo ? (
-              <Fragment>
-                <div
-                  class="pointer-events-none absolute -inset-8 -z-10 rounded-[40%] opacity-25 blur-3xl"
-                  style={`background:radial-gradient(circle, ${member.accent}, transparent 70%);`}
-                  aria-hidden="true"
-                />
-                <img
-                  src={withBase(`/${member.photo}`)}
-                  alt={member.name}
-                  class="w-full rounded-2xl shadow-2xl ring-1 ring-white/10"
-                />
-              </Fragment>
+              <img
+                src={withBase(`/${member.photo}`)}
+                alt={member.name}
+                class="w-full"
+              />
             ) : (
               <div
-                class="flex aspect-[4/5] w-full items-center justify-center rounded-2xl ring-1"
-                style={`background:${member.accent}12; color:${member.accent}; --tw-ring-color:${member.accent}40;`}
+                class="flex aspect-[4/5] w-full items-center justify-center"
+                style="background:#0a0a0a;"
               >
-                <span class="font-golden text-8xl">{initials(member.name)}</span>
+                <span
+                  class="text-7xl text-white"
+                  style="font-family:var(--font-display); font-variation-settings:'wdth' 125;"
+                >
+                  {initials(member.name)}
+                </span>
               </div>
             )
           }
         </div>
       </div>
+
+      <div>
+        <div
+          class="reveal mb-8 h-1 w-20"
+          style={`background:${member.accent}`}
+          aria-hidden="true"
+        >
+        </div>
+        <div class="space-y-6 text-xl leading-relaxed text-black/70">
+          {member.bio.split('\n\n').map((para) => <p class="reveal">{para}</p>)}
+        </div>
+
+        {
+          member.links && member.links.length > 0 && (
+            <div class="reveal mt-10 flex flex-wrap gap-4">
+              {member.links.map((l) => (
+                <a
+                  href={l.href}
+                  class="text-sm uppercase tracking-[0.15em] underline-offset-4 hover:underline"
+                >
+                  {l.label} ↗
+                </a>
+              ))}
+            </div>
+          )
+        }
+      </div>
     </section>
 
-    <!-- ============ BIO ============ -->
-    <section class="relative mx-auto max-w-3xl px-6 py-24 sm:px-10">
-      <div
-        class="reveal mb-8 h-px w-16"
-        style={`background:${member.accent}`}
-        aria-hidden="true"
-      >
-      </div>
-      <div class="space-y-5 text-xl leading-relaxed text-white/75">
-        {member.bio.split('\n\n').map((para) => <p class="reveal">{para}</p>)}
-      </div>
-
-      {
-        member.links && member.links.length > 0 && (
-          <div class="reveal mt-10 flex flex-wrap gap-4">
-            {member.links.map((l) => (
-              <a
-                href={l.href}
-                class="text-sm uppercase tracking-[0.15em] underline-offset-4 hover:underline"
-              >
-                {l.label} ↗
-              </a>
-            ))}
-          </div>
-        )
-      }
-    </section>
-
-    <!-- ============ GALLERY ============ -->
+    <!-- ============ GALLERY — images flood into color ============ -->
     {
       gallery.length > 0 && (
         <section class="mx-auto max-w-6xl px-6 pb-24 sm:px-10">
-          <p class="reveal mb-8 text-xs uppercase tracking-[0.35em] text-white/40">
+          <p class="reveal mb-8 text-xs uppercase tracking-[0.35em] text-black/40">
             gallery
           </p>
           <div class="columns-1 gap-4 sm:columns-2 [&>*]:mb-4">
             {gallery.map((src) => (
-              <div class="reveal group relative overflow-hidden rounded-2xl ring-1 ring-white/10">
+              <div class="flood-media group relative overflow-hidden rounded-2xl">
                 <img
                   src={withBase(`/${src}`)}
                   alt={member.name}
                   loading="lazy"
-                  class="w-full transition-transform duration-700 ease-out group-hover:scale-105"
+                  class="w-full transition-transform duration-700 ease-out group-hover:scale-[1.03]"
                 />
               </div>
             ))}
@@ -168,9 +187,9 @@ const BASE = '#0a0a0c';
       )
     }
 
-    <!-- ============ OTHER MEMBERS ============ -->
-    <section class="mx-auto max-w-6xl border-t border-white/10 px-6 py-20 sm:px-10">
-      <p class="text-xs uppercase tracking-[0.35em] text-white/40">more of blanc</p>
+    <!-- ============ MORE OF BLANC ============ -->
+    <section class="mx-auto max-w-6xl border-t border-black/10 px-6 py-20 sm:px-10">
+      <p class="text-xs uppercase tracking-[0.35em] text-black/40">more of blanc</p>
       <div class="mt-6 flex flex-wrap gap-x-8 gap-y-3">
         {
           members
@@ -178,13 +197,10 @@ const BASE = '#0a0a0c';
             .map((m) => (
               <a
                 href={withBase(`/members/${m.slug}`)}
-                class="group text-3xl font-semibold tracking-tight text-white/30 transition-colors hover:text-white sm:text-4xl"
+                class="group text-3xl uppercase tracking-tight text-black/25 transition-colors hover:text-black sm:text-4xl"
               >
                 {m.name}
-                <span class="opacity-0 transition-opacity group-hover:opacity-100">
-                  {' '}
-                  ↗
-                </span>
+                <span class="opacity-0 transition-opacity group-hover:opacity-100"> →</span>
               </a>
             ))
         }
@@ -192,9 +208,14 @@ const BASE = '#0a0a0c';
     </section>
 
     <footer
-      class="flex flex-col items-center justify-between gap-3 border-t border-white/10 px-6 py-8 text-xs text-white/40 sm:flex-row"
+      class="flex flex-col items-center gap-5 border-t border-black/10 px-6 pb-8 pt-12 text-xs text-black/40"
     >
-      <a href={homeHref} class="lowercase tracking-[0.2em]">blanc</a>
+      <img
+        src={withBase('/blanc-drip-logo.jpg')}
+        alt="blanc"
+        loading="lazy"
+        class="w-40 sm:w-48"
+      />
       <span>© {new Date().getFullYear()} blanc — one group. many worlds.</span>
     </footer>
   </main>
@@ -215,8 +236,69 @@ const BASE = '#0a0a0c';
       gsap.ticker.add((time) => lenis.raf(time * 1000));
       gsap.ticker.lagSmoothing(0);
 
-      gsap.set('.reveal', { y: 28 });
-      ScrollTrigger.batch('.reveal', {
+      // ---- Hero: pinned mix-in, same grammar as the worlds ----
+      const label = document.querySelector('[data-mh="label"]');
+      const title = document.querySelector('[data-mh="title"]');
+      const role = document.querySelector('[data-mh="role"]');
+      const tags = document.querySelector('[data-mh="tags"]');
+      const cue = document.querySelector('[data-mh="cue"]');
+      const bg = document.getElementById('mhero-bg');
+
+      // the photo is alive immediately; the name builds with your scroll
+      if (cue) gsap.set(cue, { opacity: 1 });
+
+      const tl = gsap.timeline({
+        defaults: { ease: 'power2.out' },
+        scrollTrigger: {
+          trigger: '#mhero',
+          start: 'top top',
+          end: '+=120%',
+          pin: true,
+          scrub: 0.4,
+          anticipatePin: 1,
+        },
+      });
+
+      if (bg)
+        tl.fromTo(bg, { scale: 1.14 }, { scale: 1, ease: 'none', duration: 0.6 }, 0);
+      if (label)
+        tl.fromTo(label, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.1 }, 0.04);
+      if (title)
+        tl.fromTo(
+          title,
+          { opacity: 0, y: 80, scale: 0.97 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.2 },
+          0.1
+        );
+      if (role)
+        tl.fromTo(role, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.12 }, 0.26);
+      if (tags)
+        tl.fromTo(tags, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.12 }, 0.34);
+      if (cue) tl.to(cue, { opacity: 0, duration: 0.08 }, 0.3);
+      tl.to({ v: 0 }, { v: 1, duration: 0.5, ease: 'none' }, 0.5);
+
+      // ---- Color floods: portrait + gallery drain in, flood to color ----
+      gsap.utils.toArray<HTMLElement>('.flood-media').forEach((m) => {
+        gsap.fromTo(
+          m,
+          { filter: 'grayscale(1) contrast(0.94)', scale: 1.04 },
+          {
+            filter: 'grayscale(0) contrast(1)',
+            scale: 1,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: m,
+              start: 'top 92%',
+              end: 'top 38%',
+              scrub: 0.5,
+            },
+          }
+        );
+      });
+
+      // ---- Reversible reveals for bio + captions ----
+      gsap.set('.reveal:not([data-mh])', { y: 28 });
+      ScrollTrigger.batch('.reveal:not([data-mh])', {
         start: 'top 88%',
         onEnter: (els) =>
           gsap.to(els, {
