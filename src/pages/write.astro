@@ -1,0 +1,268 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/url';
+
+// The word palette — each world contributes its vocabulary, ink connects them.
+const bank = {
+  golden: ['golden', 'honest', 'whisper', 'sunset', 'heart', 'truth', 'slow', 'warm', 'forever', 'tender', 'glow', 'hold'],
+  house: ['midnight', 'pulse', 'neon', 'move', 'body', 'electric', 'loop', 'night', 'drive', 'lights', 'bass', 'sweat'],
+  velvet: ['crimson', 'smoke', 'velvet', 'wild', 'burn', 'ache', 'roar', 'dark', 'fire', 'hunger'],
+  ink: ['i', 'you', 'we', 'the', 'a', 'in', 'my', 'your', 'like', 'and', "don't", 'never', 'always', 'tonight', 'again', 'love', 'lose', 'stay', 'go', 'feel', 'know', 'want', 'need', 'is', 'was'],
+};
+const homeHref = withBase('/');
+---
+
+<BaseLayout
+  title="i write — blanc"
+  description="Sit at the pen's desk. Compose your own verse from blanc's word palette and take the page with you."
+>
+  <header
+    class="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-5 py-4 text-white mix-blend-difference sm:px-8"
+  >
+    <a href={homeHref} class="text-sm uppercase tracking-[0.2em]">← blanc</a>
+    <p class="hidden text-xs uppercase tracking-[0.3em] text-white/60 sm:block">
+      the pen's desk
+    </p>
+  </header>
+
+  <main
+    class="flex min-h-screen flex-col px-4 pb-10 pt-24 sm:px-8"
+    style="background: var(--canvas); color: var(--canvas-ink);"
+  >
+    <div class="mx-auto w-full max-w-5xl text-center">
+      <h1 class="text-5xl lowercase sm:text-6xl">i write</h1>
+      <p class="mx-auto mt-3 max-w-lg text-sm text-black/60">
+        You're at the desk now. Tap words to lay them on the blank page, drag
+        them into a verse, double-tap to remove. Then take the page with you.
+      </p>
+    </div>
+
+    <!-- the blank page -->
+    <div
+      id="board"
+      class="relative mx-auto mt-8 w-full max-w-4xl flex-1 overflow-hidden rounded-2xl border border-black/10 bg-white/40"
+      style="min-height: 46vh; touch-action: none;"
+    >
+      <p
+        id="board-hint"
+        class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xs uppercase tracking-[0.35em] text-black/25"
+      >
+        the blank page
+      </p>
+    </div>
+
+    <!-- word tray -->
+    <div class="mx-auto mt-6 w-full max-w-4xl">
+      <div id="tray" class="flex flex-wrap justify-center gap-2">
+        {
+          Object.entries(bank).map(([world, words]) =>
+            words.map((w) => (
+              <button class={`chip chip-${world}`} data-word={w} data-world={world}>
+                {w}
+              </button>
+            ))
+          )
+        }
+      </div>
+
+      <!-- add your own -->
+      <div class="mt-5 flex flex-wrap items-center justify-center gap-2">
+        <input
+          id="custom-word"
+          type="text"
+          maxlength="24"
+          placeholder="your own word…"
+          class="rounded-full border border-black/20 bg-white/60 px-4 py-2 text-sm outline-none focus:border-black/50"
+        />
+        <select
+          id="custom-world"
+          class="rounded-full border border-black/20 bg-white/60 px-3 py-2 text-sm outline-none"
+          aria-label="Word color"
+        >
+          <option value="ink">ink</option>
+          <option value="golden">golden</option>
+          <option value="house">house</option>
+          <option value="velvet">velvet</option>
+        </select>
+        <button
+          id="custom-add"
+          class="rounded-full border border-black/30 px-4 py-2 text-xs uppercase tracking-[0.2em] transition-colors hover:bg-black hover:text-white"
+          >Add</button
+        >
+      </div>
+
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <button
+          id="download"
+          class="rounded-full px-6 py-3 text-xs font-medium uppercase tracking-[0.2em] text-black transition-transform hover:-translate-y-0.5"
+          style="background: linear-gradient(145deg, #f3c566, #c7761f);"
+          >Take the page with you</button
+        >
+        <button
+          id="clear"
+          class="rounded-full border border-black/25 px-5 py-3 text-xs uppercase tracking-[0.2em] text-black/70 transition-colors hover:bg-black hover:text-white"
+          >Clear</button
+        >
+      </div>
+      <p class="mt-4 text-center text-[10px] uppercase tracking-[0.35em] text-black/30">
+        blanc · i write · one group. many worlds.
+      </p>
+    </div>
+  </main>
+
+  <style>
+    .chip {
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: transform 120ms ease;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .chip:hover {
+      transform: translateY(-2px);
+    }
+    .chip-ink {
+      background: #101010;
+      color: #f7f6f4;
+    }
+    .chip-golden {
+      background: linear-gradient(145deg, #f7d98c, #e8a93c 55%, #a3610f);
+      color: #241503;
+    }
+    .chip-house {
+      background: linear-gradient(120deg, #d8dbe6, #7fe7ff 35%, #b48ce8 60%, #ff7fc0 85%, #9aa0b4);
+      color: #0b0b14;
+    }
+    .chip-velvet {
+      background:
+        radial-gradient(130% 100% at 30% 15%, rgba(255, 255, 255, 0.22), transparent 45%),
+        linear-gradient(145deg, #a41f36, #7a1020 70%, #4d0813);
+      color: #f6e2e6;
+    }
+    .board-chip {
+      position: absolute;
+      cursor: grab;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.14);
+    }
+    .board-chip:active {
+      cursor: grabbing;
+    }
+  </style>
+
+  <script>
+    const board = document.getElementById('board')!;
+    const hint = document.getElementById('board-hint');
+    const WORLD_FILL: Record<string, [string, string]> = {
+      ink: ['#101010', '#f7f6f4'],
+      golden: ['#e0a339', '#241503'],
+      house: ['#9fd4ec', '#0b0b14'],
+      velvet: ['#8c1628', '#f6e2e6'],
+    };
+
+    let placed = 0;
+    function spawnChip(word: string, world: string) {
+      const el = document.createElement('div');
+      el.className = `chip chip-${world} board-chip`;
+      el.textContent = word;
+      (el as any).dataset.world = world;
+      const bw = board.clientWidth;
+      const bh = board.clientHeight;
+      el.style.left = `${bw * 0.5 + (Math.random() - 0.5) * bw * 0.35 - 40}px`;
+      el.style.top = `${bh * 0.42 + (Math.random() - 0.5) * bh * 0.4 - 14}px`;
+      board.appendChild(el);
+      placed++;
+      if (hint) hint.style.display = 'none';
+
+      // drag
+      let sx = 0, sy = 0, ox = 0, oy = 0;
+      el.addEventListener('pointerdown', (e) => {
+        el.setPointerCapture(e.pointerId);
+        sx = e.clientX; sy = e.clientY;
+        ox = parseFloat(el.style.left); oy = parseFloat(el.style.top);
+        el.style.zIndex = String(10 + placed);
+      });
+      el.addEventListener('pointermove', (e) => {
+        if (e.buttons) {
+          const nx = Math.max(0, Math.min(board.clientWidth - el.offsetWidth, ox + e.clientX - sx));
+          const ny = Math.max(0, Math.min(board.clientHeight - el.offsetHeight, oy + e.clientY - sy));
+          el.style.left = `${nx}px`;
+          el.style.top = `${ny}px`;
+        }
+      });
+      el.addEventListener('dblclick', () => el.remove());
+      // double-tap for touch
+      let lastTap = 0;
+      el.addEventListener('pointerup', () => {
+        const now = performance.now();
+        if (now - lastTap < 350) el.remove();
+        lastTap = now;
+      });
+    }
+
+    document.querySelectorAll<HTMLElement>('#tray .chip').forEach((c) => {
+      c.addEventListener('click', () => spawnChip(c.dataset.word!, c.dataset.world!));
+    });
+
+    document.getElementById('custom-add')!.addEventListener('click', () => {
+      const input = document.getElementById('custom-word') as HTMLInputElement;
+      const world = (document.getElementById('custom-world') as HTMLSelectElement).value;
+      const w = input.value.trim();
+      if (w) {
+        spawnChip(w, world);
+        input.value = '';
+      }
+    });
+
+    document.getElementById('clear')!.addEventListener('click', () => {
+      board.querySelectorAll('.board-chip').forEach((c) => c.remove());
+      if (hint) hint.style.display = '';
+    });
+
+    // ---- export the page as an art card ----
+    document.getElementById('download')!.addEventListener('click', () => {
+      const W = 1080, H = 1350;
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d')!;
+      ctx.fillStyle = '#f7f6f4';
+      ctx.fillRect(0, 0, W, H);
+
+      const bw = board.clientWidth, bh = board.clientHeight;
+      const pad = 90;
+      const scale = Math.min((W - pad * 2) / bw, (H - pad * 2 - 120) / bh);
+
+      board.querySelectorAll<HTMLElement>('.board-chip').forEach((c) => {
+        const x = pad + parseFloat(c.style.left) * scale;
+        const y = pad + parseFloat(c.style.top) * scale;
+        const w = c.offsetWidth * scale;
+        const h = c.offsetHeight * scale;
+        const world = (c as any).dataset.world || 'ink';
+        const [bg, fg] = WORLD_FILL[world];
+        ctx.fillStyle = bg;
+        ctx.beginPath();
+        (ctx as any).roundRect(x, y, w, h, h / 2);
+        ctx.fill();
+        ctx.fillStyle = fg;
+        ctx.font = `700 ${Math.round(h * 0.5)}px 'Inter Variable', Arial, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(c.textContent || '', x + w / 2, y + h / 2 + 1);
+      });
+
+      ctx.fillStyle = '#0a0a0a';
+      ctx.font = `900 64px 'Archivo Variable', 'Arial Black', sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText('blanc', W / 2, H - 130);
+      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+      ctx.font = `500 26px 'Inter Variable', Arial, sans-serif`;
+      ctx.fillText('i write · one group. many worlds.', W / 2, H - 80);
+
+      const a = document.createElement('a');
+      a.download = 'blanc-i-write.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    });
+  </script>
+</BaseLayout>
