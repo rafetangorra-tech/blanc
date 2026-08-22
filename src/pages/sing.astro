@@ -1,0 +1,315 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/url';
+const homeHref = withBase('/');
+---
+
+<BaseLayout
+  title="i sing — blanc"
+  description="Step up to the mic. Beautiful Woman, vocals down — sing Nick's part, hear yourself in the mix, record your cover and keep it."
+>
+  <header
+    class="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-5 py-4 text-white mix-blend-difference sm:px-8"
+  >
+    <a href={homeHref} class="text-sm uppercase tracking-[0.2em]">← blanc</a>
+    <p class="hidden text-xs uppercase tracking-[0.3em] text-white/60 sm:block">
+      beautiful woman — the mic is yours
+    </p>
+  </header>
+
+  <main class="relative flex min-h-screen flex-col overflow-hidden px-4 pb-10 pt-24 text-white sm:px-8" style="background:#070408;">
+    <!-- stage backdrop -->
+    <div class="absolute inset-0" aria-hidden="true">
+      <img
+        src={withBase('/sing-stage.jpg')}
+        alt=""
+        class="h-full w-full object-cover object-[center_35%] opacity-80"
+        onerror="this.style.display='none'"
+      />
+      <div
+        class="absolute inset-0"
+        style="background: linear-gradient(to bottom, rgba(7,4,8,0.5), rgba(7,4,8,0.25) 35%, rgba(7,4,8,0.85) 70%, rgba(7,4,8,0.98));"
+      >
+      </div>
+    </div>
+
+    <div class="relative z-10 mx-auto w-full max-w-3xl text-center">
+      <h1 class="text-5xl lowercase sm:text-6xl">i sing</h1>
+      <p class="mx-auto mt-3 max-w-lg text-sm text-white/65">
+        <span class="font-semibold text-white">Beautiful Woman</span>, vocals
+        pulled down. The mic is yours — sing Nick's part, record your cover,
+        keep it forever. <span class="text-white/45">(Headphones recommended.)</span>
+      </p>
+
+      <!-- transport -->
+      <div class="mx-auto mt-8 flex w-full max-w-xl items-center gap-4">
+        <button
+          id="s-play"
+          class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-black transition-transform hover:scale-105 disabled:opacity-40"
+          style="background: linear-gradient(145deg, #f3c566, #c7761f);"
+          aria-label="Play / pause"
+          disabled
+        >
+          <svg id="s-icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+          <svg id="s-icon-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="hidden"><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
+        </button>
+        <span id="s-time" class="w-12 shrink-0 font-mono text-sm text-white/70">0:00</span>
+        <div id="s-seek" class="relative h-2 flex-1 cursor-pointer rounded-full bg-white/15">
+          <div id="s-fill" class="absolute inset-y-0 left-0 w-0 rounded-full" style="background: linear-gradient(90deg,#c7761f,#ff2d95);"></div>
+        </div>
+        <span id="s-dur" class="w-12 shrink-0 text-right font-mono text-sm text-white/70">-:--</span>
+      </div>
+
+      <!-- controls -->
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <button id="s-guide" class="singbtn active">Nick's guide vocal: ON</button>
+        <button id="s-mic" class="singbtn">🎤 Grab the mic</button>
+        <button id="s-monitor" class="singbtn" disabled>Hear yourself: OFF</button>
+        <button id="s-record" class="singbtn" disabled>● Record my cover</button>
+        <a id="s-download" class="singbtn hidden" download="blanc-my-cover.webm">⬇ Keep my cover</a>
+      </div>
+
+      <!-- voice meter -->
+      <div class="mx-auto mt-6 h-3 w-full max-w-xl overflow-hidden rounded-full bg-white/10">
+        <div id="s-meter" class="h-full w-0 rounded-full" style="background: linear-gradient(90deg,#39d98a,#e8a93c 70%,#e23a55);"></div>
+      </div>
+      <p class="mt-2 text-[10px] uppercase tracking-[0.3em] text-white/40">your voice</p>
+
+      <!-- lyrics panel -->
+      <div class="mx-auto mt-8 max-w-xl rounded-2xl border border-white/15 bg-black/40 p-6 backdrop-blur-sm">
+        <p class="text-xs uppercase tracking-[0.35em]" style="color:#e8a93c;">lyrics</p>
+        <p class="mt-3 text-sm leading-relaxed text-white/60">
+          The official lyric sheet drops here soon — until then, Nick's guide
+          vocal has your back. Toggle it down when you're ready to fly solo.
+        </p>
+      </div>
+
+      <p class="mt-8 text-[10px] uppercase tracking-[0.35em] text-white/30">
+        blanc · i sing · one group. many worlds.
+      </p>
+    </div>
+
+    <!-- loading -->
+    <div
+      id="s-loader"
+      class="absolute inset-0 z-30 flex flex-col items-center justify-center gap-5 bg-black/80 px-6 text-center backdrop-blur-sm"
+    >
+      <h2 class="text-3xl lowercase text-white">warming up the stage…</h2>
+      <div class="h-2 w-full max-w-xs overflow-hidden rounded-full bg-white/15">
+        <div id="s-loadfill" class="h-full w-0 rounded-full" style="background: linear-gradient(90deg,#c7761f,#ff2d95);"></div>
+      </div>
+    </div>
+  </main>
+
+  <style>
+    .singbtn {
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 150ms ease;
+    }
+    .singbtn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .singbtn:disabled {
+      opacity: 0.4;
+    }
+    .singbtn.active {
+      background: #e8a93c;
+      border-color: #e8a93c;
+      color: #1a1206;
+    }
+    .singbtn.recording {
+      background: #e23a55;
+      border-color: #e23a55;
+      color: #fff;
+      animation: recpulse 1.2s ease-in-out infinite;
+    }
+    @keyframes recpulse {
+      50% { box-shadow: 0 0 18px rgba(226, 58, 85, 0.8); }
+    }
+  </style>
+
+  <script>
+    const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const master = ctx.createGain();
+    master.connect(ctx.destination);
+    const recDest = ctx.createMediaStreamDestination();
+
+    const instGain = ctx.createGain();
+    const guideGain = ctx.createGain();
+    instGain.connect(master); instGain.connect(recDest);
+    guideGain.connect(master); guideGain.connect(recDest);
+    guideGain.gain.value = 0.9;
+
+    let instBuf: AudioBuffer | null = null;
+    let guideBuf: AudioBuffer | null = null;
+    let srcs: AudioBufferSourceNode[] = [];
+    let playing = false, startedAt = 0, offset = 0;
+
+    const $ = (id: string) => document.getElementById(id)!;
+    const fmt = (s: number) => `${(s / 60) | 0}:${String((s | 0) % 60).padStart(2, '0')}`;
+    const dur = () => instBuf?.duration ?? 0;
+    const now = () => (playing ? ctx.currentTime - startedAt + offset : offset);
+
+    async function load(url: string) {
+      const res = await fetch(url);
+      return ctx.decodeAudioData(await res.arrayBuffer());
+    }
+    (async () => {
+      try {
+        $('s-loadfill').style.width = '20%';
+        instBuf = await load(`${BASE}/stems/instrumental.mp3`);
+        $('s-loadfill').style.width = '70%';
+        guideBuf = await load(`${BASE}/stems/vocals.mp3`);
+        $('s-loadfill').style.width = '100%';
+        const l = $('s-loader');
+        l.style.transition = 'opacity .5s';
+        l.style.opacity = '0';
+        setTimeout(() => l.remove(), 550);
+        ($('s-play') as HTMLButtonElement).disabled = false;
+        $('s-dur').textContent = fmt(dur());
+      } catch (e) {
+        $('s-loader').querySelector('h2')!.textContent = 'could not load the track — refresh?';
+        console.error(e);
+      }
+    })();
+
+    function start(at: number) {
+      const t0 = ctx.currentTime + 0.05;
+      srcs = [];
+      [[instBuf, instGain], [guideBuf, guideGain]].forEach(([buf, gain]: any[]) => {
+        if (!buf) return;
+        const s = ctx.createBufferSource();
+        s.buffer = buf;
+        s.connect(gain);
+        s.start(t0, Math.min(at, buf.duration - 0.01));
+        srcs.push(s);
+      });
+      startedAt = t0; offset = at;
+    }
+    function stopAll() {
+      srcs.forEach((s) => { try { s.stop(); } catch {} });
+      srcs = [];
+    }
+    $('s-play').addEventListener('click', async () => {
+      await ctx.resume();
+      if (!playing) {
+        if (now() >= dur() - 0.05) offset = 0;
+        start(offset);
+        playing = true;
+      } else {
+        offset = now(); stopAll(); playing = false;
+      }
+      $('s-icon-play').classList.toggle('hidden', playing);
+      $('s-icon-pause').classList.toggle('hidden', !playing);
+    });
+    $('s-seek').addEventListener('pointerdown', (e) => {
+      const r = $('s-seek').getBoundingClientRect();
+      const t = Math.max(0, Math.min(0.999, (e.clientX - r.left) / r.width)) * dur();
+      if (playing) { stopAll(); start(t); } else offset = t;
+    });
+
+    // guide vocal toggle
+    let guideOn = true;
+    $('s-guide').addEventListener('click', () => {
+      guideOn = !guideOn;
+      guideGain.gain.setTargetAtTime(guideOn ? 0.9 : 0, ctx.currentTime, 0.05);
+      $('s-guide').textContent = `Nick's guide vocal: ${guideOn ? 'ON' : 'OFF'}`;
+      $('s-guide').classList.toggle('active', guideOn);
+    });
+
+    // mic
+    let micGainMon: GainNode | null = null;
+    let analyser: AnalyserNode | null = null;
+    let monitorOn = false;
+    $('s-mic').addEventListener('click', async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true },
+        });
+        await ctx.resume();
+        const micSrc = ctx.createMediaStreamSource(stream);
+        analyser = ctx.createAnalyser();
+        analyser.fftSize = 512;
+        micSrc.connect(analyser);
+        const micRec = ctx.createGain();
+        micRec.gain.value = 1.0;
+        micSrc.connect(micRec);
+        micRec.connect(recDest); // always recorded
+        micGainMon = ctx.createGain();
+        micGainMon.gain.value = 0; // monitoring off by default (feedback!)
+        micSrc.connect(micGainMon);
+        micGainMon.connect(master);
+        $('s-mic').textContent = '🎤 Mic is live';
+        $('s-mic').classList.add('active');
+        ($('s-monitor') as HTMLButtonElement).disabled = false;
+        ($('s-record') as HTMLButtonElement).disabled = false;
+      } catch {
+        $('s-mic').textContent = '🎤 Mic blocked — allow access?';
+      }
+    });
+    $('s-monitor').addEventListener('click', () => {
+      if (!micGainMon) return;
+      monitorOn = !monitorOn;
+      micGainMon.gain.setTargetAtTime(monitorOn ? 0.9 : 0, ctx.currentTime, 0.05);
+      $('s-monitor').textContent = `Hear yourself: ${monitorOn ? 'ON' : 'OFF'}`;
+      $('s-monitor').classList.toggle('active', monitorOn);
+    });
+
+    // record
+    let rec: MediaRecorder | null = null;
+    let chunks: Blob[] = [];
+    $('s-record').addEventListener('click', () => {
+      if (!rec || rec.state === 'inactive') {
+        chunks = [];
+        rec = new MediaRecorder(recDest.stream);
+        rec.ondataavailable = (e) => chunks.push(e.data);
+        rec.onstop = () => {
+          const blob = new Blob(chunks, { type: 'audio/webm' });
+          const a = $('s-download') as HTMLAnchorElement;
+          a.href = URL.createObjectURL(blob);
+          a.classList.remove('hidden');
+        };
+        rec.start();
+        $('s-record').textContent = '■ Stop recording';
+        $('s-record').classList.add('recording');
+      } else {
+        rec.stop();
+        $('s-record').textContent = '● Record my cover';
+        $('s-record').classList.remove('recording');
+      }
+    });
+
+    // meter + time loop
+    const meterData = new Uint8Array(256);
+    (function loop() {
+      if (analyser) {
+        analyser.getByteTimeDomainData(meterData);
+        let sum = 0;
+        for (let i = 0; i < meterData.length; i++) {
+          const x = (meterData[i] - 128) / 128;
+          sum += x * x;
+        }
+        const rms = Math.sqrt(sum / meterData.length);
+        $('s-meter').style.width = `${Math.min(100, rms * 260)}%`;
+      }
+      const t = Math.min(now(), dur());
+      $('s-time').textContent = fmt(t);
+      $('s-fill').style.width = dur() ? `${(t / dur()) * 100}%` : '0%';
+      if (playing && t >= dur()) {
+        stopAll(); playing = false; offset = 0;
+        $('s-icon-play').classList.remove('hidden');
+        $('s-icon-pause').classList.add('hidden');
+      }
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</BaseLayout>

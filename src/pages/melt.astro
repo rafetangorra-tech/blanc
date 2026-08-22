@@ -1,0 +1,285 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/url';
+const homeHref = withBase('/');
+---
+
+<BaseLayout
+  title="i melt — blanc"
+  description="Pour the three worlds onto the blank page. Real flowing liquid — gold, chrome, velvet — under your fingertip. Take your pour with you."
+>
+  <header
+    class="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-5 py-4 text-white mix-blend-difference sm:px-8"
+  >
+    <a href={homeHref} class="text-sm uppercase tracking-[0.2em]">← blanc</a>
+    <p class="hidden text-xs uppercase tracking-[0.3em] text-white/60 sm:block">
+      pour the worlds
+    </p>
+  </header>
+
+  <main
+    class="flex min-h-screen flex-col px-4 pb-10 pt-24 sm:px-8"
+    style="background: var(--canvas); color: var(--canvas-ink);"
+  >
+    <div class="mx-auto w-full max-w-5xl text-center">
+      <h1 class="text-5xl lowercase sm:text-6xl">i melt</h1>
+      <p class="mx-auto mt-3 max-w-lg text-sm text-black/60">
+        The blank page is yours. Pick a world and drag to pour — the liquids
+        flow, swirl, and marble into each other. Take your pour with you.
+      </p>
+    </div>
+
+    <div class="relative mx-auto mt-8 w-full max-w-4xl flex-1">
+      <canvas
+        id="fluid"
+        class="w-full rounded-2xl border border-black/10"
+        style="touch-action: none; aspect-ratio: 4/3; display: block; cursor: crosshair;"
+      ></canvas>
+    </div>
+
+    <div class="mx-auto mt-6 flex w-full max-w-4xl flex-wrap items-center justify-center gap-3">
+      <button class="pour-btn active" data-material="gold" id="pb-gold">gold</button>
+      <button class="pour-btn" data-material="chrome" id="pb-chrome">chrome</button>
+      <button class="pour-btn" data-material="velvet" id="pb-velvet">velvet</button>
+      <span class="mx-2 h-6 w-px bg-black/15" aria-hidden="true"></span>
+      <button
+        id="melt-download"
+        class="rounded-full px-6 py-3 text-xs font-medium uppercase tracking-[0.2em] text-black transition-transform hover:-translate-y-0.5"
+        style="background: linear-gradient(145deg, #f3c566, #c7761f);"
+        >Take your pour with you</button
+      >
+      <button
+        id="melt-clear"
+        class="rounded-full border border-black/25 px-5 py-3 text-xs uppercase tracking-[0.2em] text-black/70 transition-colors hover:bg-black hover:text-white"
+        >Clear</button
+      >
+    </div>
+    <p class="mt-4 text-center text-[10px] uppercase tracking-[0.35em] text-black/30">
+      blanc · i melt · one group. many worlds.
+    </p>
+  </main>
+
+  <style>
+    .pour-btn {
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 700;
+      border: 2px solid transparent;
+      opacity: 0.55;
+      transition: all 150ms ease;
+    }
+    .pour-btn.active {
+      opacity: 1;
+      border-color: rgba(0, 0, 0, 0.55);
+    }
+    #pb-gold {
+      background: linear-gradient(145deg, #f7d98c, #e8a93c 55%, #a3610f);
+      color: #241503;
+    }
+    #pb-chrome {
+      background: linear-gradient(120deg, #d8dbe6, #7fe7ff 35%, #b48ce8 60%, #ff7fc0 85%, #9aa0b4);
+      color: #0b0b14;
+    }
+    #pb-velvet {
+      background:
+        radial-gradient(130% 100% at 30% 15%, rgba(255, 255, 255, 0.22), transparent 45%),
+        linear-gradient(145deg, #a41f36, #7a1020 70%, #4d0813);
+      color: #f6e2e6;
+    }
+  </style>
+
+  <script>
+    // ————— i melt: a compact stable-fluids solver (Jos Stam), CPU, no deps —————
+    const N = 110; // sim grid
+    const canvas = document.getElementById('fluid') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const off = document.createElement('canvas');
+    off.width = N;
+    off.height = N;
+    const offCtx = off.getContext('2d')!;
+    const img = offCtx.createImageData(N, N);
+
+    const size = (N + 2) * (N + 2);
+    const u = new Float32Array(size), v = new Float32Array(size);
+    const u0 = new Float32Array(size), v0 = new Float32Array(size);
+    const r = new Float32Array(size), g = new Float32Array(size), b = new Float32Array(size);
+    const r0 = new Float32Array(size), g0 = new Float32Array(size), b0 = new Float32Array(size);
+    const IX = (i: number, j: number) => i + (N + 2) * j;
+
+    function setBnd(bnd: number, x: Float32Array) {
+      for (let i = 1; i <= N; i++) {
+        x[IX(0, i)] = bnd === 1 ? -x[IX(1, i)] : x[IX(1, i)];
+        x[IX(N + 1, i)] = bnd === 1 ? -x[IX(N, i)] : x[IX(N, i)];
+        x[IX(i, 0)] = bnd === 2 ? -x[IX(i, 1)] : x[IX(i, 1)];
+        x[IX(i, N + 1)] = bnd === 2 ? -x[IX(i, N)] : x[IX(i, N)];
+      }
+    }
+    function project() {
+      const p = u0, div = v0;
+      for (let j = 1; j <= N; j++)
+        for (let i = 1; i <= N; i++) {
+          div[IX(i, j)] = -0.5 * (u[IX(i + 1, j)] - u[IX(i - 1, j)] + v[IX(i, j + 1)] - v[IX(i, j - 1)]) / N;
+          p[IX(i, j)] = 0;
+        }
+      setBnd(0, div); setBnd(0, p);
+      for (let k = 0; k < 12; k++) {
+        for (let j = 1; j <= N; j++)
+          for (let i = 1; i <= N; i++)
+            p[IX(i, j)] = (div[IX(i, j)] + p[IX(i - 1, j)] + p[IX(i + 1, j)] + p[IX(i, j - 1)] + p[IX(i, j + 1)]) / 4;
+        setBnd(0, p);
+      }
+      for (let j = 1; j <= N; j++)
+        for (let i = 1; i <= N; i++) {
+          u[IX(i, j)] -= 0.5 * N * (p[IX(i + 1, j)] - p[IX(i - 1, j)]);
+          v[IX(i, j)] -= 0.5 * N * (p[IX(i, j + 1)] - p[IX(i, j - 1)]);
+        }
+      setBnd(1, u); setBnd(2, v);
+    }
+    function advect(bnd: number, d: Float32Array, d0: Float32Array, dt: number) {
+      const dt0 = dt * N;
+      for (let j = 1; j <= N; j++)
+        for (let i = 1; i <= N; i++) {
+          let x = i - dt0 * u[IX(i, j)];
+          let y = j - dt0 * v[IX(i, j)];
+          x = Math.max(0.5, Math.min(N + 0.5, x));
+          y = Math.max(0.5, Math.min(N + 0.5, y));
+          const i0 = x | 0, j0 = y | 0, i1 = i0 + 1, j1 = j0 + 1;
+          const s1 = x - i0, s0 = 1 - s1, t1 = y - j0, t0 = 1 - t1;
+          d[IX(i, j)] =
+            s0 * (t0 * d0[IX(i0, j0)] + t1 * d0[IX(i0, j1)]) +
+            s1 * (t0 * d0[IX(i1, j0)] + t1 * d0[IX(i1, j1)]);
+        }
+      setBnd(bnd, d);
+    }
+
+    // materials
+    const MATERIALS: Record<string, () => [number, number, number]> = {
+      gold: () => [224, 166, 60],
+      velvet: () => [138, 20, 38],
+      chrome: () => {
+        // iridescent: hue drifts as you pour
+        const t = performance.now() / 900;
+        return [
+          150 + 90 * Math.sin(t),
+          150 + 90 * Math.sin(t + 2.1),
+          170 + 80 * Math.sin(t + 4.2),
+        ];
+      },
+    };
+    let material = 'gold';
+    document.querySelectorAll<HTMLElement>('.pour-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.pour-btn').forEach((x) => x.classList.remove('active'));
+        btn.classList.add('active');
+        material = btn.dataset.material!;
+      });
+    });
+
+    // pointer pouring
+    let px = 0, py = 0, pouring = false;
+    function toGrid(e: PointerEvent): [number, number] {
+      const rct = canvas.getBoundingClientRect();
+      return [
+        ((e.clientX - rct.left) / rct.width) * N,
+        ((e.clientY - rct.top) / rct.height) * N,
+      ];
+    }
+    canvas.addEventListener('pointerdown', (e) => {
+      canvas.setPointerCapture(e.pointerId);
+      [px, py] = toGrid(e);
+      pouring = true;
+    });
+    canvas.addEventListener('pointermove', (e) => {
+      if (!pouring) return;
+      const [x, y] = toGrid(e);
+      const dx = x - px, dy = y - py;
+      const [cr, cg, cb] = MATERIALS[material]();
+      const rad = 2.6;
+      for (let oj = -3; oj <= 3; oj++)
+        for (let oi = -3; oi <= 3; oi++) {
+          const d2 = oi * oi + oj * oj;
+          if (d2 > rad * rad) continue;
+          const i = Math.max(1, Math.min(N, (x | 0) + oi));
+          const j = Math.max(1, Math.min(N, (y | 0) + oj));
+          const k = IX(i, j);
+          const f = 1 - Math.sqrt(d2) / rad;
+          r[k] = Math.min(1.4, r[k] + (cr / 255) * f * 0.5);
+          g[k] = Math.min(1.4, g[k] + (cg / 255) * f * 0.5);
+          b[k] = Math.min(1.4, b[k] + (cb / 255) * f * 0.5);
+          u[k] += dx * 0.9 * f;
+          v[k] += dy * 0.9 * f;
+        }
+      px = x; py = y;
+    });
+    canvas.addEventListener('pointerup', () => (pouring = false));
+
+    document.getElementById('melt-clear')!.addEventListener('click', () => {
+      r.fill(0); g.fill(0); b.fill(0); u.fill(0); v.fill(0);
+    });
+
+    // render loop
+    const CANVAS_W = 1200, CANVAS_H = 900;
+    canvas.width = CANVAS_W;
+    canvas.height = CANVAS_H;
+    const CREAM = [247, 246, 244];
+
+    function frame() {
+      // sim step
+      u0.set(u); v0.set(v);
+      advect(1, u, u0, 0.016);
+      advect(2, v, v0, 0.016);
+      project();
+      r0.set(r); g0.set(g); b0.set(b);
+      advect(0, r, r0, 0.016);
+      advect(0, g, g0, 0.016);
+      advect(0, b, b0, 0.016);
+
+      // draw dye over cream
+      const data = img.data;
+      for (let j = 0; j < N; j++)
+        for (let i = 0; i < N; i++) {
+          const k = IX(i + 1, j + 1);
+          const a = Math.min(1, Math.max(r[k], g[k], b[k]) * 1.15);
+          const p = (i + j * N) * 4;
+          data[p] = CREAM[0] * (1 - a) + Math.min(255, r[k] * 255) * a;
+          data[p + 1] = CREAM[1] * (1 - a) + Math.min(255, g[k] * 255) * a;
+          data[p + 2] = CREAM[2] * (1 - a) + Math.min(255, b[k] * 255) * a;
+          data[p + 3] = 255;
+        }
+      offCtx.putImageData(img, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(off, 0, 0, CANVAS_W, CANVAS_H);
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+
+    // export
+    document.getElementById('melt-download')!.addEventListener('click', () => {
+      const W = 1080, H = 1350;
+      const out = document.createElement('canvas');
+      out.width = W; out.height = H;
+      const o = out.getContext('2d')!;
+      o.fillStyle = '#f7f6f4';
+      o.fillRect(0, 0, W, H);
+      const pad = 70;
+      const targetH = ((W - pad * 2) * CANVAS_H) / CANVAS_W;
+      o.imageSmoothingQuality = 'high';
+      o.drawImage(canvas, pad, pad, W - pad * 2, targetH);
+      o.fillStyle = '#0a0a0a';
+      o.font = `900 64px 'Archivo Variable', 'Arial Black', sans-serif`;
+      o.textAlign = 'center';
+      o.fillText('blanc', W / 2, H - 130);
+      o.fillStyle = 'rgba(0,0,0,0.4)';
+      o.font = `500 26px 'Inter Variable', Arial, sans-serif`;
+      o.fillText('i melt · one group. many worlds.', W / 2, H - 80);
+      const link = document.createElement('a');
+      link.download = 'blanc-i-melt.png';
+      link.href = out.toDataURL('image/png');
+      link.click();
+    });
+  </script>
+</BaseLayout>
