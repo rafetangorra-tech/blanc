@@ -82,10 +82,14 @@ And under all of it is the oldest partnership in the group: two brothers who’v
   {
     slug: 'jacqueline-tangorra',
     name: 'Jacqueline Tangorra',
-    role: 'songwriter · TODO instrument/role',
+    role: 'the pen of blanc',
     worlds: ['house', 'golden'],
-    accent: '#E23A55',
-    bio: 'PLACEHOLDER — Jacqueline’s bio goes here. Her voice in the collective and the sound she’s known for.',
+    accent: '#C7761F',
+    bio: `Jacqueline Tangorra was a poet long before she was a songwriter — twenty-three years of filling pages with the big subjects: love, faith, who you are when nobody’s watching. She’s the kind of writer who feels everything at full volume and then finds the six words that say it better than your own diary could. That instinct didn’t change when the pages became songs. It got dangerous.
+
+In blanc, Jacqueline is the pen. She writes the line you rewind — the one that arrives in the second verse and quietly takes the whole song hostage. Golden World is where her handwriting shows most: unfiltered, diary-close detail, names-and-places honesty, the gut-punch delivered gently. And when the collective goes after House World’s pulse, she’s the reason there’s a story worth dancing to underneath it.
+
+She’s also family — married to Rafe, which makes blanc less a project and more a household: her words, his worlds, Nick’s voice. Three writers passing the same truth around the room until it becomes a song. Somebody has to write down what the heart actually said. That’s Jacqueline’s job, and nobody does it with more love.`,
     // photo: 'members/jacqueline-tangorra.jpg',
   },
 ];
