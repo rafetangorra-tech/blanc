@@ -69,10 +69,14 @@ Ask what he’s after and the answer is simple: it has to make you move. High-en
   {
     slug: 'nick-tangorra',
     name: 'Nick Tangorra',
-    role: 'songwriter · TODO instrument/role',
+    role: 'the voice of blanc',
     worlds: ['house', 'golden'],
     accent: '#C7761F',
-    bio: 'PLACEHOLDER — Nick’s bio goes here. What he plays, what he writes, the world he lives in most.',
+    bio: `Nick Tangorra has been the voice in the room since he was a teenager on Long Island, fronting the Nick Tangorra Band — the group he built with his brother Rafe — and turning a self-made single called “Boo Hoo” into 28 million streams. The rooms got bigger fast: writing sessions with Toby Gad, Lindy Robbins, and Steve Kipner, and stages shared with Fifth Harmony, Shawn Mendes, and Meghan Trainor. Born entertainer isn’t a figure of speech here. It’s the job description.
+
+In blanc, Nick is the voice — all of it. Melodies pour out of him faster than the sessions can catch them, and then the craftsman takes over: stacking, comping, chasing the take until it’s undeniable. What comes out is a tone you recognize in one note, elastic enough to live in two worlds at once — smooth and hypnotic when it floats over House World’s pulse, close enough to whisper when Golden World asks for the truth.
+
+And under all of it is the oldest partnership in the group: two brothers who’ve been writing songs in the same room for over a decade. Rafe builds the worlds; Nick makes you believe them. Put him in front of a crowd and you’ll see the rest — some people learn to hold a room. Nick was built for it.`,
     // photo: 'members/nick-tangorra.jpg',
   },
   {
