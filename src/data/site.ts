@@ -50,7 +50,7 @@ export const members: Member[] = [
     slug: 'rafe-tangorra',
     name: 'Rafe Tangorra',
     role: 'producer · multi-instrumentalist',
-    worlds: ['house', 'velvet'],
+    worlds: ['house', 'golden', 'velvet'],
     accent: '#00E5FF',
     bio: `Rafe Tangorra didn’t learn music in a classroom — he learned it on stages. On Long Island, he taught himself drums, then guitar, then bass, then keys, playing night after night and band after band until he could hear an entire record in his head and go build it himself. Years on the live circuit and a run of earlier projects sharpened the instinct that defines him now: whatever the song needs, he can play it.
 
@@ -70,7 +70,7 @@ Ask what he’s after and the answer is simple: it has to make you move. High-en
     slug: 'nick-tangorra',
     name: 'Nick Tangorra',
     role: 'songwriter · TODO instrument/role',
-    worlds: ['golden'],
+    worlds: ['house', 'golden'],
     accent: '#C7761F',
     bio: 'PLACEHOLDER — Nick’s bio goes here. What he plays, what he writes, the world he lives in most.',
     // photo: 'members/nick-tangorra.jpg',
@@ -79,7 +79,7 @@ Ask what he’s after and the answer is simple: it has to make you move. High-en
     slug: 'jacqueline-tangorra',
     name: 'Jacqueline Tangorra',
     role: 'songwriter · TODO instrument/role',
-    worlds: ['velvet', 'golden'],
+    worlds: ['house', 'golden'],
     accent: '#E23A55',
     bio: 'PLACEHOLDER — Jacqueline’s bio goes here. Her voice in the collective and the sound she’s known for.',
     // photo: 'members/jacqueline-tangorra.jpg',
