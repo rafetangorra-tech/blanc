@@ -56,6 +56,11 @@ const homeHref = withBase('/');
         <button id="d-restart" class="dbtn" disabled>↺ Restart</button>
         <span id="d-kit" class="dpill dead">KIT SILENT</span>
       </div>
+      <div class="mx-auto mt-3 flex justify-center gap-2">
+        <button class="ddiff" data-diff="easy">easy</button>
+        <button class="ddiff active" data-diff="medium">medium</button>
+        <button class="ddiff" data-diff="hard">hard</button>
+      </div>
       <div class="mx-auto mt-3 flex w-full max-w-xl items-baseline justify-between font-mono text-sm text-white/80">
         <span id="d-score">0</span>
         <span id="d-combo" class="text-xs uppercase tracking-[0.25em] text-white/50"></span>
@@ -127,6 +132,27 @@ const homeHref = withBase('/');
       color: #ff8fa0;
       border: 1px solid rgba(226, 58, 85, 0.5);
     }
+    .ddiff {
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.5);
+      border: 1.5px solid rgba(255, 255, 255, 0.3);
+      transition: all 150ms ease;
+    }
+    .ddiff.active {
+      color: #1a1206;
+      background: #e8a93c;
+      border-color: #e8a93c;
+    }
+    .ddiff[data-diff='hard'].active {
+      color: #fff;
+      background: #E23A55;
+      border-color: #E23A55;
+    }
   </style>
 
   <script>
@@ -144,7 +170,19 @@ const homeHref = withBase('/');
 
     let bandBuf: AudioBuffer | null = null;
     let drumBuf: AudioBuffer | null = null;
-    let chart: [number, number][] = []; // [ms, lane]
+    let fullChart: [number, number][] = []; // [ms, lane]
+    let chart: [number, number][] = []; // active (difficulty-filtered)
+    // easy: kick+snare only. medium: + every 2nd hat. hard: the whole kit.
+    let diff = localStorage.getItem('blanc-iplay-diff') || 'medium';
+    function buildActive() {
+      let hatCount = 0;
+      chart = fullChart.filter(([, lane]) => {
+        if (lane !== 0) return true;
+        if (diff === 'easy') return false;
+        if (diff === 'medium') return hatCount++ % 2 === 0;
+        return true;
+      });
+    }
     let srcs: AudioBufferSourceNode[] = [];
     let playing = false, startedAt = 0, offset = 0;
 
@@ -178,7 +216,8 @@ const homeHref = withBase('/');
         $('d-loadfill').style.width = '55%';
         drumBuf = await load(`${BASE}/stems/drums.mp3`);
         $('d-loadfill').style.width = '85%';
-        chart = await (await fetch(`${BASE}/stems/drums-chart.json`)).json();
+        fullChart = await (await fetch(`${BASE}/stems/drums-chart.json`)).json();
+        buildActive();
         states = chart.map(() => 0);
         $('d-loadfill').style.width = '100%';
         const l = $('d-loader');
@@ -220,6 +259,7 @@ const homeHref = withBase('/');
       srcs = [];
     }
     function resetRun() {
+      buildActive();
       states = chart.map(() => 0);
       score = 0; combo = 0; maxCombo = 0; hits = 0; judged = 0;
       floaters = [];
@@ -258,6 +298,26 @@ const homeHref = withBase('/');
       playing = true;
       $('d-icon-play').classList.add('hidden');
       $('d-icon-pause').classList.remove('hidden');
+    });
+
+    // difficulty selector — switching restarts the run
+    document.querySelectorAll<HTMLElement>('.ddiff').forEach((btn) => {
+      if (btn.dataset.diff === diff) {
+        document.querySelectorAll('.ddiff').forEach((x) => x.classList.remove('active'));
+        btn.classList.add('active');
+      }
+      btn.addEventListener('click', () => {
+        diff = btn.dataset.diff!;
+        localStorage.setItem('blanc-iplay-diff', diff);
+        document.querySelectorAll('.ddiff').forEach((x) => x.classList.remove('active'));
+        btn.classList.add('active');
+        stopAll();
+        playing = false;
+        offset = 0;
+        resetRun();
+        $('d-icon-play').classList.remove('hidden');
+        $('d-icon-pause').classList.add('hidden');
+      });
     });
 
     // ---- input ----
