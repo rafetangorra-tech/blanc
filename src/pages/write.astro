@@ -1,267 +1,538 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { withBase } from '../lib/url';
-
-// The word palette — each world contributes its vocabulary, ink connects them.
-const bank = {
-  golden: ['golden', 'honest', 'whisper', 'sunset', 'heart', 'truth', 'slow', 'warm', 'forever', 'tender', 'glow', 'hold'],
-  house: ['midnight', 'pulse', 'neon', 'move', 'body', 'electric', 'loop', 'night', 'drive', 'lights', 'bass', 'sweat'],
-  velvet: ['crimson', 'smoke', 'velvet', 'wild', 'burn', 'ache', 'roar', 'dark', 'fire', 'hunger'],
-  ink: ['i', 'you', 'we', 'the', 'a', 'in', 'my', 'your', 'like', 'and', "don't", 'never', 'always', 'tonight', 'again', 'love', 'lose', 'stay', 'go', 'feel', 'know', 'want', 'need', 'is', 'was'],
-};
 const homeHref = withBase('/');
 ---
 
 <BaseLayout
   title="i write — blanc"
-  description="Sit at the pen's desk. Compose your own verse from blanc's word palette and take the page with you."
+  description="The Pen's Deadline — three writing sessions, one clock. Beat the brief, land the rhymes, earn your rank, keep your song."
 >
   <header
     class="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-5 py-4 text-white mix-blend-difference sm:px-8"
   >
     <a href={homeHref} class="text-sm uppercase tracking-[0.2em]">← blanc</a>
     <p class="hidden text-xs uppercase tracking-[0.3em] text-white/60 sm:block">
-      the pen's desk
+      the pen's deadline
     </p>
   </header>
 
   <main
-    class="flex min-h-screen flex-col px-4 pb-10 pt-24 sm:px-8"
+    id="stage"
+    class="flex min-h-screen flex-col px-4 pb-10 pt-24 transition-colors duration-700 sm:px-8"
     style="background: var(--canvas); color: var(--canvas-ink);"
   >
-    <div class="mx-auto w-full max-w-5xl text-center">
-      <h1 class="text-5xl lowercase sm:text-6xl">i write</h1>
-      <p class="mx-auto mt-3 max-w-lg text-sm text-black/60">
-        You're at the desk now. Tap words to lay them on the blank page, drag
-        them into a verse, double-tap to remove. Then take the page with you.
+    <!-- ============ INTRO ============ -->
+    <section id="scr-intro" class="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center text-center">
+      <p class="text-xs uppercase tracking-[0.4em] opacity-50">jacqueline's desk</p>
+      <h1 class="mt-3 text-6xl lowercase sm:text-7xl">i write</h1>
+      <p class="mt-5 max-w-md opacity-70">
+        Three writing sessions. One clock. The brief tells you the world and
+        the words it needs — build four lines before the ink runs out. Land
+        the required words, make your lines rhyme, write like the pen.
       </p>
-    </div>
+      <div class="mt-6 space-y-1 text-xs uppercase tracking-[0.2em] opacity-50">
+        <p>world words score bigger in their world</p>
+        <p>rhyming line-endings pay +30</p>
+        <p>leftover seconds become points</p>
+      </div>
+      <button id="btn-start" class="wbtn-primary mt-9">Take the session</button>
+    </section>
 
-    <!-- the blank page -->
-    <div
-      id="board"
-      class="relative mx-auto mt-8 w-full max-w-4xl flex-1 overflow-hidden rounded-2xl border border-black/10 bg-white/40"
-      style="min-height: 46vh; touch-action: none;"
-    >
-      <p
-        id="board-hint"
-        class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xs uppercase tracking-[0.35em] text-black/25"
-      >
-        the blank page
-      </p>
-    </div>
-
-    <!-- word tray -->
-    <div class="mx-auto mt-6 w-full max-w-4xl">
-      <div id="tray" class="flex flex-wrap justify-center gap-2">
-        {
-          Object.entries(bank).map(([world, words]) =>
-            words.map((w) => (
-              <button class={`chip chip-${world}`} data-word={w} data-world={world}>
-                {w}
-              </button>
-            ))
-          )
-        }
+    <!-- ============ ROUND ============ -->
+    <section id="scr-round" class="mx-auto hidden w-full max-w-3xl flex-1 flex-col">
+      <!-- timer drip -->
+      <div class="h-2 w-full overflow-hidden rounded-full bg-black/10">
+        <div id="timerbar" class="h-full w-full rounded-full" style="background: linear-gradient(90deg,#c7761f,#e8a93c,#f3c566);"></div>
       </div>
 
-      <!-- add your own -->
-      <div class="mt-5 flex flex-wrap items-center justify-center gap-2">
-        <input
-          id="custom-word"
-          type="text"
-          maxlength="24"
-          placeholder="your own word…"
-          class="rounded-full border border-black/20 bg-white/60 px-4 py-2 text-sm outline-none focus:border-black/50"
-        />
-        <select
-          id="custom-world"
-          class="rounded-full border border-black/20 bg-white/60 px-3 py-2 text-sm outline-none"
-          aria-label="Word color"
-        >
-          <option value="ink">ink</option>
-          <option value="golden">golden</option>
-          <option value="house">house</option>
-          <option value="velvet">velvet</option>
-        </select>
-        <button
-          id="custom-add"
-          class="rounded-full border border-black/30 px-4 py-2 text-xs uppercase tracking-[0.2em] transition-colors hover:bg-black hover:text-white"
-          >Add</button
-        >
+      <div class="mt-4 flex items-baseline justify-between gap-3">
+        <p id="round-tag" class="text-xs uppercase tracking-[0.35em]"></p>
+        <p class="font-mono text-sm"><span id="score">0</span> pts</p>
       </div>
+      <p id="round-brief" class="mt-2 text-lg font-medium leading-snug"></p>
+      <p id="round-req" class="mt-1 text-sm opacity-60"></p>
 
-      <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
-        <button
-          id="download"
-          class="rounded-full px-6 py-3 text-xs font-medium uppercase tracking-[0.2em] text-black transition-transform hover:-translate-y-0.5"
-          style="background: linear-gradient(145deg, #f3c566, #c7761f);"
-          >Take the page with you</button
-        >
-        <button
-          id="clear"
-          class="rounded-full border border-black/25 px-5 py-3 text-xs uppercase tracking-[0.2em] text-black/70 transition-colors hover:bg-black hover:text-white"
-          >Clear</button
-        >
+      <!-- the four lines -->
+      <div id="lines" class="mt-5 space-y-2"></div>
+
+      <!-- tray -->
+      <div id="wtray" class="mt-6 flex flex-wrap justify-center gap-2"></div>
+
+      <div class="mt-5 flex items-center justify-center gap-3">
+        <button id="btn-done" class="wbtn-secondary">Hand it in early</button>
+        <button id="btn-mute" class="wbtn-secondary" aria-label="Toggle sound">🔊</button>
       </div>
-      <p class="mt-4 text-center text-[10px] uppercase tracking-[0.35em] text-black/30">
+    </section>
+
+    <!-- ============ BETWEEN ROUNDS ============ -->
+    <section id="scr-between" class="mx-auto hidden w-full max-w-xl flex-1 flex-col items-center justify-center text-center">
+      <p id="bt-tag" class="text-xs uppercase tracking-[0.4em] opacity-50"></p>
+      <p id="bt-score" class="mt-4 text-7xl font-mono"></p>
+      <div id="bt-detail" class="mt-4 space-y-1 text-sm opacity-70"></div>
+      <button id="btn-next" class="wbtn-primary mt-8">Next session →</button>
+    </section>
+
+    <!-- ============ FINAL ============ -->
+    <section id="scr-final" class="mx-auto hidden w-full max-w-2xl flex-1 flex-col items-center pt-6 text-center">
+      <p class="text-xs uppercase tracking-[0.4em] opacity-50">session complete</p>
+      <p id="f-rank" class="mt-3 text-5xl lowercase sm:text-6xl"></p>
+      <p class="mt-2 font-mono text-xl"><span id="f-score"></span> pts</p>
+      <div id="f-sheet" class="mt-8 w-full space-y-6 text-left"></div>
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <button id="btn-export" class="wbtn-primary">Keep my song</button>
+        <button id="btn-again" class="wbtn-secondary">Run it back</button>
+      </div>
+      <p class="mb-2 mt-8 text-[10px] uppercase tracking-[0.35em] opacity-40">
         blanc · i write · one group. many worlds.
       </p>
-    </div>
+    </section>
+
+    <!-- toasts -->
+    <div id="toasts" class="pointer-events-none fixed bottom-24 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-1"></div>
   </main>
 
   <style>
-    .chip {
-      padding: 6px 14px;
+    .wbtn-primary {
+      padding: 14px 34px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #241503;
+      background: linear-gradient(145deg, #f3c566, #c7761f);
+      transition: transform 150ms ease;
+    }
+    .wbtn-primary:hover { transform: translateY(-2px); }
+    .wbtn-secondary {
+      padding: 12px 22px;
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 700;
+      border: 1px solid currentColor;
+      opacity: 0.65;
+      transition: opacity 150ms ease;
+    }
+    .wbtn-secondary:hover { opacity: 1; }
+
+    .wchip {
+      padding: 7px 14px;
       border-radius: 999px;
       font-size: 13px;
-      font-weight: 600;
-      transition: transform 120ms ease;
+      font-weight: 700;
       user-select: none;
       -webkit-user-select: none;
+      transition: transform 120ms ease, opacity 120ms ease;
     }
-    .chip:hover {
-      transform: translateY(-2px);
-    }
-    .chip-ink {
-      background: #101010;
-      color: #f7f6f4;
-    }
-    .chip-golden {
-      background: linear-gradient(145deg, #f7d98c, #e8a93c 55%, #a3610f);
-      color: #241503;
-    }
-    .chip-house {
-      background: linear-gradient(120deg, #d8dbe6, #7fe7ff 35%, #b48ce8 60%, #ff7fc0 85%, #9aa0b4);
-      color: #0b0b14;
-    }
-    .chip-velvet {
+    .wchip:hover { transform: translateY(-2px); }
+    .wchip.required { box-shadow: 0 0 0 2px currentColor, 0 0 14px rgba(232, 169, 60, 0.7); }
+    .wchip-ink { background: #101010; color: #f7f6f4; }
+    .wchip-golden { background: linear-gradient(145deg, #f7d98c, #e8a93c 55%, #a3610f); color: #241503; }
+    .wchip-house { background: linear-gradient(120deg, #d8dbe6, #7fe7ff 35%, #b48ce8 60%, #ff7fc0 85%, #9aa0b4); color: #0b0b14; }
+    .wchip-velvet {
       background:
         radial-gradient(130% 100% at 30% 15%, rgba(255, 255, 255, 0.22), transparent 45%),
         linear-gradient(145deg, #a41f36, #7a1020 70%, #4d0813);
       color: #f6e2e6;
     }
-    .board-chip {
-      position: absolute;
-      cursor: grab;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.14);
+
+    .wline {
+      min-height: 46px;
+      border-radius: 12px;
+      border: 1.5px dashed rgba(127, 127, 127, 0.35);
+      padding: 6px 10px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: border-color 150ms ease, background 150ms ease;
     }
-    .board-chip:active {
-      cursor: grabbing;
+    .wline.active {
+      border-color: currentColor;
+      border-style: solid;
+      background: rgba(127, 127, 127, 0.07);
+    }
+    .wline.rhymed {
+      box-shadow: 0 0 0 2px #e8a93c, 0 0 16px rgba(232, 169, 60, 0.45);
+    }
+    .wline .lnum {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      opacity: 0.4;
+      margin-right: 4px;
+    }
+
+    .toast {
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #241503;
+      background: linear-gradient(145deg, #f3c566, #c7761f);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+      animation: toastup 1.4s ease forwards;
+    }
+    @keyframes toastup {
+      0% { opacity: 0; transform: translateY(14px) scale(0.9); }
+      15% { opacity: 1; transform: translateY(0) scale(1); }
+      80% { opacity: 1; }
+      100% { opacity: 0; transform: translateY(-18px); }
     }
   </style>
 
   <script>
-    const board = document.getElementById('board')!;
-    const hint = document.getElementById('board-hint');
-    const WORLD_FILL: Record<string, [string, string]> = {
-      ink: ['#101010', '#f7f6f4'],
-      golden: ['#e0a339', '#241503'],
-      house: ['#9fd4ec', '#0b0b14'],
-      velvet: ['#8c1628', '#f6e2e6'],
-    };
+    // ————— i write: The Pen's Deadline —————
+    type W = { w: string; r?: string; world: string };
+    // rhyme families hidden in the bank — finding them is the game
+    const BANK: W[] = [
+      // house
+      { w: 'night', r: 'ite', world: 'house' }, { w: 'light', r: 'ite', world: 'house' },
+      { w: 'ignite', r: 'ite', world: 'house' }, { w: 'tonight', r: 'ite', world: 'house' },
+      { w: 'neon', world: 'house' }, { w: 'pulse', world: 'house' }, { w: 'bass', world: 'house' },
+      { w: 'electric', world: 'house' }, { w: 'body', world: 'house' },
+      { w: 'motion', r: 'otion', world: 'house' }, { w: 'heat', r: 'eat', world: 'house' },
+      { w: 'street', r: 'eat', world: 'house' }, { w: 'repeat', r: 'eat', world: 'house' },
+      { w: 'beat', r: 'eat', world: 'house' }, { w: 'low', r: 'ow', world: 'house' },
+      { w: 'show', r: 'ow', world: 'house' }, { w: 'away', r: 'ay', world: 'house' },
+      { w: 'play', r: 'ay', world: 'house' }, { w: 'midnight', world: 'house' },
+      // golden
+      { w: 'gold', r: 'old', world: 'golden' }, { w: 'hold', r: 'old', world: 'golden' },
+      { w: 'told', r: 'old', world: 'golden' }, { w: 'glow', r: 'ow', world: 'golden' },
+      { w: 'slow', r: 'ow', world: 'golden' }, { w: 'know', r: 'ow', world: 'golden' },
+      { w: 'love', r: 'uv', world: 'golden' }, { w: 'above', r: 'uv', world: 'golden' },
+      { w: 'stay', r: 'ay', world: 'golden' }, { w: 'sway', r: 'ay', world: 'golden' },
+      { w: 'honest', world: 'golden' }, { w: 'golden', world: 'golden' },
+      { w: 'whisper', world: 'golden' }, { w: 'tender', world: 'golden' },
+      { w: 'forever', world: 'golden' }, { w: 'sweet', r: 'eat', world: 'golden' },
+      { w: 'heartbeat', r: 'eat', world: 'golden' }, { w: 'ocean', r: 'otion', world: 'golden' },
+      { w: 'devotion', r: 'otion', world: 'golden' }, { w: 'rain', r: 'ain', world: 'golden' },
+      { w: 'again', r: 'ain', world: 'golden' }, { w: 'remain', r: 'ain', world: 'golden' },
+      // velvet
+      { w: 'burn', r: 'urn', world: 'velvet' }, { w: 'yearn', r: 'urn', world: 'velvet' },
+      { w: 'turn', r: 'urn', world: 'velvet' }, { w: 'fire', r: 'ire', world: 'velvet' },
+      { w: 'desire', r: 'ire', world: 'velvet' }, { w: 'higher', r: 'ire', world: 'velvet' },
+      { w: 'crimson', world: 'velvet' }, { w: 'smoke', world: 'velvet' },
+      { w: 'velvet', world: 'velvet' }, { w: 'cold', r: 'old', world: 'velvet' },
+      { w: 'bold', r: 'old', world: 'velvet' }, { w: 'ache', r: 'ake', world: 'velvet' },
+      { w: 'take', r: 'ake', world: 'velvet' }, { w: 'make', r: 'ake', world: 'velvet' },
+      { w: 'chain', r: 'ain', world: 'velvet' }, { w: 'pain', r: 'ain', world: 'velvet' },
+      { w: 'wild', world: 'velvet' }, { w: 'dark', world: 'velvet' },
+      // ink connectors
+      ...['i', 'you', 'we', 'the', 'my', 'your', 'in', 'like', "don't", 'never',
+        'always', 'and', 'is', 'feel', 'want', 'need', 'lose', 'run', 'when', 'till']
+        .map((w) => ({ w, world: 'ink' })),
+    ];
 
-    let placed = 0;
-    function spawnChip(word: string, world: string) {
-      const el = document.createElement('div');
-      el.className = `chip chip-${world} board-chip`;
-      el.textContent = word;
-      (el as any).dataset.world = world;
-      const bw = board.clientWidth;
-      const bh = board.clientHeight;
-      el.style.left = `${bw * 0.5 + (Math.random() - 0.5) * bw * 0.35 - 40}px`;
-      el.style.top = `${bh * 0.42 + (Math.random() - 0.5) * bh * 0.4 - 14}px`;
-      board.appendChild(el);
-      placed++;
-      if (hint) hint.style.display = 'none';
+    const ROUNDS = [
+      {
+        world: 'house', name: 'HOUSE WORLD', bg: '#0B0B14', ink: '#EDEDF7', accent: '#00E5FF',
+        brief: '3AM at the warehouse. The floor is moving — write the hook that keeps it moving.',
+        required: ['pulse', 'night'],
+      },
+      {
+        world: 'golden', name: 'GOLDEN WORLD', bg: '#F6EAD3', ink: '#2A1D0A', accent: '#C7761F',
+        brief: 'Golden hour, windows down. Write the confession you could only whisper.',
+        required: ['golden', 'honest'],
+      },
+      {
+        world: 'velvet', name: 'VELVET WORLD', bg: '#150609', ink: '#F3E7EA', accent: '#E23A55',
+        brief: 'The velvet rope is down and the amps are hot. Write it dangerous.',
+        required: ['burn', 'crimson'],
+      },
+    ];
+    const ROUND_SECONDS = 75;
+    const RANKS: [number, string][] = [
+      [0, 'the intern'], [400, 'the ghostwriter'], [750, 'the hitmaker'], [1050, 'the pen'],
+    ];
 
-      // drag
-      let sx = 0, sy = 0, ox = 0, oy = 0;
-      el.addEventListener('pointerdown', (e) => {
-        el.setPointerCapture(e.pointerId);
-        sx = e.clientX; sy = e.clientY;
-        ox = parseFloat(el.style.left); oy = parseFloat(el.style.top);
-        el.style.zIndex = String(10 + placed);
-      });
-      el.addEventListener('pointermove', (e) => {
-        if (e.buttons) {
-          const nx = Math.max(0, Math.min(board.clientWidth - el.offsetWidth, ox + e.clientX - sx));
-          const ny = Math.max(0, Math.min(board.clientHeight - el.offsetHeight, oy + e.clientY - sy));
-          el.style.left = `${nx}px`;
-          el.style.top = `${ny}px`;
-        }
-      });
-      el.addEventListener('dblclick', () => el.remove());
-      // double-tap for touch
-      let lastTap = 0;
-      el.addEventListener('pointerup', () => {
-        const now = performance.now();
-        if (now - lastTap < 350) el.remove();
-        lastTap = now;
+    const $ = (id: string) => document.getElementById(id)!;
+    const stage = $('stage');
+    const screens = ['scr-intro', 'scr-round', 'scr-between', 'scr-final'];
+    function show(id: string) {
+      screens.forEach((s) => {
+        $(s).classList.toggle('hidden', s !== id);
+        $(s).classList.toggle('flex', s === id);
       });
     }
 
-    document.querySelectorAll<HTMLElement>('#tray .chip').forEach((c) => {
-      c.addEventListener('click', () => spawnChip(c.dataset.word!, c.dataset.world!));
+    // ---- tiny sound engine (webaudio blips, no assets) ----
+    let actx: AudioContext | null = null;
+    let muted = false;
+    function blip(freq: number, dur = 0.08, type: OscillatorType = 'sine', gain = 0.12) {
+      if (muted) return;
+      actx = actx || new (window.AudioContext || (window as any).webkitAudioContext)();
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(gain, actx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + dur);
+      o.connect(g); g.connect(actx.destination);
+      o.start(); o.stop(actx.currentTime + dur);
+    }
+    const sTap = () => blip(660, 0.06);
+    const sPocket = () => blip(880, 0.09);
+    const sRhyme = () => { blip(523, 0.12); setTimeout(() => blip(659, 0.12), 90); setTimeout(() => blip(784, 0.16), 180); };
+    const sDone = () => { blip(392, 0.15); setTimeout(() => blip(523, 0.2), 130); };
+    $('btn-mute').addEventListener('click', () => {
+      muted = !muted;
+      $('btn-mute').textContent = muted ? '🔇' : '🔊';
     });
 
-    document.getElementById('custom-add')!.addEventListener('click', () => {
-      const input = document.getElementById('custom-word') as HTMLInputElement;
-      const world = (document.getElementById('custom-world') as HTMLSelectElement).value;
-      const w = input.value.trim();
-      if (w) {
-        spawnChip(w, world);
-        input.value = '';
+    function toast(msg: string) {
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = msg;
+      $('toasts').appendChild(t);
+      setTimeout(() => t.remove(), 1500);
+    }
+
+    // ---- game state ----
+    let round = 0;
+    let lines: W[][] = [[], [], [], []];
+    let activeLine = 0;
+    let totals: number[] = [];
+    let verses: { name: string; accent: string; lines: string[] }[] = [];
+    let timeLeft = ROUND_SECONDS;
+    let timerId: number | null = null;
+    let roundOver = false;
+
+    function sample<T>(arr: T[], n: number): T[] {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = (Math.random() * (i + 1)) | 0;
+        [a[i], a[j]] = [a[j], a[i]];
       }
-    });
+      return a.slice(0, n);
+    }
 
-    document.getElementById('clear')!.addEventListener('click', () => {
-      board.querySelectorAll('.board-chip').forEach((c) => c.remove());
-      if (hint) hint.style.display = '';
-    });
+    function buildTray(r: (typeof ROUNDS)[0]): W[] {
+      const req = BANK.filter((x) => r.required.includes(x.w));
+      const world = BANK.filter((x) => x.world === r.world && !r.required.includes(x.w));
+      // guarantee at least one full rhyme family from this world
+      const fams = [...new Set(world.filter((x) => x.r).map((x) => x.r))];
+      const fam = fams[(Math.random() * fams.length) | 0];
+      const famWords = BANK.filter((x) => x.r === fam).slice(0, 3);
+      const others = BANK.filter((x) => x.world !== r.world && x.world !== 'ink' && x.r !== fam);
+      const ink = BANK.filter((x) => x.world === 'ink');
+      const pool = [
+        ...req, ...famWords,
+        ...sample(world.filter((x) => !famWords.includes(x)), 7),
+        ...sample(others, 4),
+        ...sample(ink, 6),
+      ];
+      // dedupe by word
+      const seen = new Set<string>();
+      return pool.filter((x) => (seen.has(x.w) ? false : (seen.add(x.w), true)));
+    }
 
-    // ---- export the page as an art card ----
-    document.getElementById('download')!.addEventListener('click', () => {
-      const W = 1080, H = 1350;
-      const canvas = document.createElement('canvas');
-      canvas.width = W; canvas.height = H;
-      const ctx = canvas.getContext('2d')!;
-      ctx.fillStyle = '#f7f6f4';
-      ctx.fillRect(0, 0, W, H);
-
-      const bw = board.clientWidth, bh = board.clientHeight;
-      const pad = 90;
-      const scale = Math.min((W - pad * 2) / bw, (H - pad * 2 - 120) / bh);
-
-      board.querySelectorAll<HTMLElement>('.board-chip').forEach((c) => {
-        const x = pad + parseFloat(c.style.left) * scale;
-        const y = pad + parseFloat(c.style.top) * scale;
-        const w = c.offsetWidth * scale;
-        const h = c.offsetHeight * scale;
-        const world = (c as any).dataset.world || 'ink';
-        const [bg, fg] = WORLD_FILL[world];
-        ctx.fillStyle = bg;
-        ctx.beginPath();
-        (ctx as any).roundRect(x, y, w, h, h / 2);
-        ctx.fill();
-        ctx.fillStyle = fg;
-        ctx.font = `700 ${Math.round(h * 0.5)}px 'Inter Variable', Arial, sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(c.textContent || '', x + w / 2, y + h / 2 + 1);
+    // ---- scoring (recomputed from board state — no bookkeeping) ----
+    function computeScore(r: (typeof ROUNDS)[0]): { pts: number; detail: string[] } {
+      let pts = 0;
+      const detail: string[] = [];
+      let words = 0, pocket = 0;
+      lines.flat().forEach((w) => {
+        words++;
+        pts += 8;
+        if (w.world === r.world) { pts += 12; pocket++; }
       });
+      if (words) detail.push(`${words} words laid down`);
+      if (pocket) detail.push(`${pocket} in the pocket`);
+      r.required.forEach((req) => {
+        if (lines.flat().some((w) => w.w === req)) { pts += 20; detail.push(`required: "${req}" +20`); }
+      });
+      // rhymes: line-ending rhyme families across distinct lines
+      const enders = lines.map((l) => l[l.length - 1]?.r).map((x) => x || null);
+      const counted = new Set<number>();
+      for (let i = 0; i < 4; i++)
+        for (let j = i + 1; j < 4; j++)
+          if (enders[i] && enders[i] === enders[j] && !(counted.has(i) && counted.has(j))) {
+            pts += 30;
+            counted.add(i); counted.add(j);
+          }
+      if (counted.size) detail.push(`${counted.size} rhymed line-endings`);
+      lines.forEach((l) => { if (l.length >= 3) pts += 10; });
+      return { pts, detail };
+    }
 
-      ctx.fillStyle = '#0a0a0a';
-      ctx.font = `900 64px 'Archivo Variable', 'Arial Black', sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.fillText('blanc', W / 2, H - 130);
-      ctx.fillStyle = 'rgba(0,0,0,0.4)';
-      ctx.font = `500 26px 'Inter Variable', Arial, sans-serif`;
-      ctx.fillText('i write · one group. many worlds.', W / 2, H - 80);
+    let lastRhymeCount = 0;
+    function refresh(r: (typeof ROUNDS)[0]) {
+      // lines UI
+      const linesEl = $('lines');
+      linesEl.innerHTML = '';
+      const enders = lines.map((l) => l[l.length - 1]?.r || null);
+      lines.forEach((l, i) => {
+        const div = document.createElement('div');
+        div.className = 'wline' + (i === activeLine ? ' active' : '');
+        const rhymed = enders[i] && enders.some((e, j) => j !== i && e === enders[i]);
+        if (rhymed) div.classList.add('rhymed');
+        const num = document.createElement('span');
+        num.className = 'lnum';
+        num.textContent = `L${i + 1}`;
+        div.appendChild(num);
+        l.forEach((w, wi) => {
+          const c = document.createElement('button');
+          c.className = `wchip wchip-${w.world}`;
+          c.textContent = w.w;
+          c.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (roundOver) return;
+            l.splice(wi, 1);
+            refresh(r);
+          });
+          div.appendChild(c);
+        });
+        div.addEventListener('click', () => {
+          activeLine = i;
+          refresh(r);
+        });
+        linesEl.appendChild(div);
+      });
+      // score + rhyme feedback
+      const { pts } = computeScore(r);
+      $('score').textContent = String(pts);
+      const rhymedNow = document.querySelectorAll('.wline.rhymed').length;
+      if (rhymedNow > lastRhymeCount) { toast('RHYME! +30'); sRhyme(); }
+      lastRhymeCount = rhymedNow;
+    }
 
+    function startRound() {
+      const r = ROUNDS[round];
+      lines = [[], [], [], []];
+      activeLine = 0;
+      roundOver = false;
+      lastRhymeCount = 0;
+      timeLeft = ROUND_SECONDS;
+      stage.style.background = r.bg;
+      stage.style.color = r.ink;
+      $('round-tag').textContent = `session ${round + 1} of 3 — ${r.name}`;
+      ($('round-tag') as HTMLElement).style.color = r.accent;
+      $('round-brief').textContent = r.brief;
+      $('round-req').textContent = `required words: ${r.required.join(' · ')}  ·  tap a line, then tap words`;
+      // tray
+      const tray = $('wtray');
+      tray.innerHTML = '';
+      buildTray(r).forEach((w) => {
+        const c = document.createElement('button');
+        c.className = `wchip wchip-${w.world}` + (r.required.includes(w.w) ? ' required' : '');
+        c.textContent = w.w;
+        c.addEventListener('click', () => {
+          if (roundOver) return;
+          if (lines[activeLine].length >= 6) {
+            activeLine = Math.min(3, activeLine + 1);
+          }
+          lines[activeLine].push(w);
+          if (lines[activeLine].length >= 6 && activeLine < 3) activeLine++;
+          w.world === r.world ? sPocket() : sTap();
+          refresh(r);
+        });
+        tray.appendChild(c);
+      });
+      refresh(r);
+      show('scr-round');
+      // timer
+      if (timerId) clearInterval(timerId);
+      timerId = window.setInterval(() => {
+        timeLeft -= 0.1;
+        $('timerbar').style.width = `${Math.max(0, (timeLeft / ROUND_SECONDS) * 100)}%`;
+        if (timeLeft <= 0) endRound();
+      }, 100);
+    }
+
+    function endRound() {
+      if (roundOver) return;
+      roundOver = true;
+      if (timerId) clearInterval(timerId);
+      const r = ROUNDS[round];
+      const { pts, detail } = computeScore(r);
+      const timeBonus = Math.max(0, Math.round(timeLeft)) * 2;
+      const total = pts + timeBonus;
+      totals.push(total);
+      verses.push({
+        name: r.name,
+        accent: r.accent,
+        lines: lines.map((l) => l.map((w) => w.w).join(' ')).filter(Boolean),
+      });
+      sDone();
+      $('bt-tag').textContent = `${r.name} — session ${round + 1} of 3`;
+      $('bt-score').textContent = `+${total}`;
+      $('bt-detail').innerHTML =
+        detail.map((d) => `<p>${d}</p>`).join('') +
+        (timeBonus ? `<p>deadline bonus +${timeBonus}</p>` : '');
+      $('btn-next').textContent = round < 2 ? 'Next session →' : 'See my rank →';
+      show('scr-between');
+    }
+
+    function finish() {
+      const total = totals.reduce((a, b) => a + b, 0);
+      let rank = RANKS[0][1];
+      RANKS.forEach(([min, name]) => { if (total >= min) rank = name; });
+      $('f-rank').textContent = rank;
+      $('f-score').textContent = String(total);
+      $('f-sheet').innerHTML = verses
+        .map(
+          (v) => `
+        <div>
+          <p class="text-xs uppercase tracking-[0.35em]" style="color:${v.accent}">${v.name}</p>
+          ${v.lines.map((l) => `<p class="mt-1 text-lg italic opacity-85">${l || '—'}</p>`).join('') || '<p class="mt-1 opacity-40 italic">(silence)</p>'}
+        </div>`
+        )
+        .join('');
+      stage.style.background = 'var(--canvas)';
+      stage.style.color = 'var(--canvas-ink)';
+      show('scr-final');
+    }
+
+    $('btn-start').addEventListener('click', () => { round = 0; totals = []; verses = []; startRound(); });
+    $('btn-done').addEventListener('click', endRound);
+    $('btn-next').addEventListener('click', () => {
+      round++;
+      round < 3 ? startRound() : finish();
+    });
+    $('btn-again').addEventListener('click', () => { round = 0; totals = []; verses = []; startRound(); });
+
+    // ---- export the song sheet ----
+    $('btn-export').addEventListener('click', () => {
+      const W = 1080, H = 1350;
+      const c = document.createElement('canvas');
+      c.width = W; c.height = H;
+      const x = c.getContext('2d')!;
+      x.fillStyle = '#f7f6f4';
+      x.fillRect(0, 0, W, H);
+      x.textAlign = 'center';
+      x.fillStyle = 'rgba(0,0,0,0.45)';
+      x.font = `600 26px 'Inter Variable', Arial, sans-serif`;
+      x.fillText('a song written at the pen’s desk', W / 2, 110);
+      let y = 210;
+      verses.forEach((v) => {
+        x.fillStyle = v.accent;
+        x.font = `800 26px 'Inter Variable', Arial, sans-serif`;
+        x.fillText(v.name, W / 2, y);
+        y += 46;
+        x.fillStyle = '#1a1a1a';
+        x.font = `italic 500 34px Georgia, serif`;
+        (v.lines.length ? v.lines : ['—']).forEach((l) => {
+          x.fillText(l, W / 2, y, W - 140);
+          y += 46;
+        });
+        y += 40;
+      });
+      const total = totals.reduce((a, b) => a + b, 0);
+      let rank = RANKS[0][1];
+      RANKS.forEach(([min, name]) => { if (total >= min) rank = name; });
+      x.fillStyle = '#0a0a0a';
+      x.font = `900 64px 'Archivo Variable', 'Arial Black', sans-serif`;
+      x.fillText('blanc', W / 2, H - 150);
+      x.fillStyle = 'rgba(0,0,0,0.45)';
+      x.font = `500 26px 'Inter Variable', Arial, sans-serif`;
+      x.fillText(`i write · ${rank} · ${total} pts`, W / 2, H - 100);
       const a = document.createElement('a');
       a.download = 'blanc-i-write.png';
-      a.href = canvas.toDataURL('image/png');
+      a.href = c.toDataURL('image/png');
       a.click();
     });
   </script>
