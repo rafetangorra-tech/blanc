@@ -1,0 +1,401 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/url';
+const homeHref = withBase('/');
+---
+
+<BaseLayout
+  title="i play — blanc"
+  description="Sit at Rafe's kit. Hit the notes and the real drums play — drop the sticks and the whole kit goes silent while the band plays on."
+>
+  <header
+    class="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-5 py-4 text-white mix-blend-difference sm:px-8"
+  >
+    <a href={homeHref} class="text-sm uppercase tracking-[0.2em]">← blanc</a>
+    <p class="hidden text-xs uppercase tracking-[0.3em] text-white/60 sm:block">
+      beautiful woman — the kit is yours
+    </p>
+  </header>
+
+  <main class="relative flex min-h-screen flex-col overflow-hidden px-4 pb-10 pt-24 text-white sm:px-8" style="background:#060407;">
+    <!-- drummer POV backdrop -->
+    <div class="absolute inset-0" aria-hidden="true">
+      <img
+        src={withBase('/iplay-stage.jpg')}
+        alt=""
+        class="h-full w-full object-cover object-[center_30%] opacity-75"
+        onerror="this.style.display='none'"
+      />
+      <div
+        class="absolute inset-0"
+        style="background: linear-gradient(to bottom, rgba(6,4,7,0.5), rgba(6,4,7,0.3) 30%, rgba(6,4,7,0.88) 62%, rgba(6,4,7,0.98));"
+      >
+      </div>
+    </div>
+
+    <div class="relative z-10 mx-auto w-full max-w-2xl text-center">
+      <h1 class="text-5xl lowercase sm:text-6xl">i play</h1>
+      <p class="mx-auto mt-2 max-w-lg text-sm text-white/65">
+        You're behind Rafe's kit. Hit the notes and
+        <span class="font-semibold text-white">the real drums play</span> —
+        miss, and the kit goes silent while the band plays on.
+      </p>
+
+      <!-- transport + HUD -->
+      <div class="mx-auto mt-5 flex w-full max-w-xl items-center justify-center gap-4">
+        <button
+          id="d-play"
+          class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-black transition-transform hover:scale-105 disabled:opacity-40"
+          style="background: linear-gradient(145deg, #f3c566, #c7761f);"
+          aria-label="Play / pause"
+          disabled
+        >
+          <svg id="d-icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+          <svg id="d-icon-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="hidden"><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
+        </button>
+        <button id="d-restart" class="dbtn" disabled>↺ Restart</button>
+        <span id="d-kit" class="dpill dead">KIT SILENT</span>
+      </div>
+      <div class="mx-auto mt-3 flex w-full max-w-xl items-baseline justify-between font-mono text-sm text-white/80">
+        <span id="d-score">0</span>
+        <span id="d-combo" class="text-xs uppercase tracking-[0.25em] text-white/50"></span>
+        <span id="d-acc">—</span>
+      </div>
+
+      <!-- highway -->
+      <canvas
+        id="d-canvas"
+        class="mx-auto mt-3 w-full max-w-xl rounded-2xl border border-white/15 bg-black/45"
+        style="aspect-ratio: 10/11; display:block; touch-action:none;"
+      ></canvas>
+      <p class="mt-2 text-[10px] uppercase tracking-[0.3em] text-white/40">
+        keys A·S·D or J·K·L — or tap the lanes
+      </p>
+      <p class="mt-4 text-[10px] uppercase tracking-[0.35em] text-white/30">
+        blanc · i play · one group. many worlds.
+      </p>
+    </div>
+
+    <!-- loading -->
+    <div
+      id="d-loader"
+      class="absolute inset-0 z-30 flex flex-col items-center justify-center gap-5 bg-black/80 px-6 text-center backdrop-blur-sm"
+    >
+      <h2 class="text-3xl lowercase text-white">setting up the kit…</h2>
+      <div class="h-2 w-full max-w-xs overflow-hidden rounded-full bg-white/15">
+        <div id="d-loadfill" class="h-full w-0 rounded-full" style="background: linear-gradient(90deg,#00E5FF,#e8a93c,#E23A55);"></div>
+      </div>
+    </div>
+
+    <!-- results -->
+    <div id="d-results" class="absolute inset-0 z-30 hidden flex-col items-center justify-center gap-3 bg-black/85 px-6 text-center backdrop-blur-sm">
+      <p id="d-r-tag" class="text-xs uppercase tracking-[0.4em] text-white/50"></p>
+      <p id="d-r-score" class="font-mono text-6xl text-white"></p>
+      <p id="d-r-detail" class="text-sm text-white/60"></p>
+      <button id="d-r-again" class="dbtn mt-6" style="opacity:1;">↺ Play again</button>
+    </div>
+  </main>
+
+  <style>
+    .dbtn {
+      padding: 12px 20px;
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+    }
+    .dbtn:disabled { opacity: 0.4; }
+    .dpill {
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      font-weight: 800;
+      transition: all 150ms ease;
+    }
+    .dpill.live {
+      background: #39d98a;
+      color: #062;
+      box-shadow: 0 0 16px rgba(57, 217, 138, 0.6);
+    }
+    .dpill.dead {
+      background: rgba(226, 58, 85, 0.25);
+      color: #ff8fa0;
+      border: 1px solid rgba(226, 58, 85, 0.5);
+    }
+  </style>
+
+  <script>
+    // ————— i play: the kit is yours (hit = real drums; miss = silence) —————
+    const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
+    const $ = (id: string) => document.getElementById(id)!;
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const master = ctx.createGain();
+    master.connect(ctx.destination);
+    const bandGain = ctx.createGain();
+    const drumGain = ctx.createGain();
+    bandGain.connect(master);
+    drumGain.connect(master);
+    drumGain.gain.value = 0; // the kit is silent until you earn it
+
+    let bandBuf: AudioBuffer | null = null;
+    let drumBuf: AudioBuffer | null = null;
+    let chart: [number, number][] = []; // [ms, lane]
+    let srcs: AudioBufferSourceNode[] = [];
+    let playing = false, startedAt = 0, offset = 0;
+
+    const LANES = [
+      { name: 'hats', color: '#7fe7ff', keys: ['a', 'j'] },
+      { name: 'snare', color: '#e8a93c', keys: ['s', 'k'] },
+      { name: 'kick', color: '#E23A55', keys: ['d', 'l'] },
+    ];
+    const APPROACH = 1.7; // seconds of runway
+    const GOOD = 0.13, PERFECT = 0.06;
+
+    type NoteState = 0 | 1 | 2; // pending / hit / missed
+    let states: NoteState[] = [];
+    let score = 0, combo = 0, maxCombo = 0, hits = 0, judged = 0;
+    let kitLive = false;
+    let flashes = [0, 0, 0];
+    let floaters: { x: number; y: number; txt: string; c: string; life: number }[] = [];
+
+    const dur = () => bandBuf?.duration ?? 0;
+    const now = () => (playing ? ctx.currentTime - startedAt + offset : offset);
+    const fmt = (s: number) => `${(s / 60) | 0}:${String((s | 0) % 60).padStart(2, '0')}`;
+
+    async function load(url: string) {
+      const res = await fetch(url);
+      return ctx.decodeAudioData(await res.arrayBuffer());
+    }
+    (async () => {
+      try {
+        $('d-loadfill').style.width = '15%';
+        bandBuf = await load(`${BASE}/stems/nodrums.mp3`);
+        $('d-loadfill').style.width = '55%';
+        drumBuf = await load(`${BASE}/stems/drums.mp3`);
+        $('d-loadfill').style.width = '85%';
+        chart = await (await fetch(`${BASE}/stems/drums-chart.json`)).json();
+        states = chart.map(() => 0);
+        $('d-loadfill').style.width = '100%';
+        const l = $('d-loader');
+        l.style.transition = 'opacity .5s';
+        l.style.opacity = '0';
+        setTimeout(() => l.remove(), 550);
+        ($('d-play') as HTMLButtonElement).disabled = false;
+        ($('d-restart') as HTMLButtonElement).disabled = false;
+      } catch (e) {
+        $('d-loader').querySelector('h2')!.textContent = 'could not set up the kit — refresh?';
+        console.error(e);
+      }
+    })();
+
+    function setKit(live: boolean) {
+      if (live === kitLive) return;
+      kitLive = live;
+      drumGain.gain.setTargetAtTime(live ? 1 : 0, ctx.currentTime, live ? 0.012 : 0.05);
+      $('d-kit').textContent = live ? 'KIT LIVE' : 'KIT SILENT';
+      $('d-kit').className = `dpill ${live ? 'live' : 'dead'}`;
+    }
+
+    function startSources(at: number) {
+      const t0 = ctx.currentTime + 0.08;
+      srcs = [];
+      [[bandBuf, bandGain], [drumBuf, drumGain]].forEach(([buf, g]: any[]) => {
+        if (!buf) return;
+        const s = ctx.createBufferSource();
+        s.buffer = buf;
+        s.connect(g);
+        s.start(t0, Math.min(at, buf.duration - 0.01));
+        srcs.push(s);
+      });
+      startedAt = t0;
+      offset = at;
+    }
+    function stopAll() {
+      srcs.forEach((s) => { try { s.stop(); } catch {} });
+      srcs = [];
+    }
+    function resetRun() {
+      states = chart.map(() => 0);
+      score = 0; combo = 0; maxCombo = 0; hits = 0; judged = 0;
+      floaters = [];
+      setKit(false);
+      $('d-results').classList.add('hidden');
+      $('d-results').classList.remove('flex');
+    }
+
+    $('d-play').addEventListener('click', async () => {
+      await ctx.resume();
+      if (!playing) {
+        if (now() >= dur() - 0.05) { offset = 0; resetRun(); }
+        startSources(offset);
+        playing = true;
+      } else {
+        offset = now();
+        stopAll();
+        playing = false;
+      }
+      $('d-icon-play').classList.toggle('hidden', playing);
+      $('d-icon-pause').classList.toggle('hidden', !playing);
+    });
+    $('d-restart').addEventListener('click', async () => {
+      await ctx.resume();
+      stopAll();
+      resetRun();
+      startSources(0);
+      playing = true;
+      $('d-icon-play').classList.add('hidden');
+      $('d-icon-pause').classList.remove('hidden');
+    });
+    $('d-r-again').addEventListener('click', () => {
+      stopAll();
+      resetRun();
+      startSources(0);
+      playing = true;
+      $('d-icon-play').classList.add('hidden');
+      $('d-icon-pause').classList.remove('hidden');
+    });
+
+    // ---- input ----
+    const canvas = $('d-canvas') as HTMLCanvasElement;
+    const cx2 = canvas.getContext('2d')!;
+    const CW = 1000, CH = 1100;
+    canvas.width = CW; canvas.height = CH;
+    const HITY = CH * 0.8;
+
+    function laneHit(lane: number) {
+      if (!playing) return;
+      flashes[lane] = 1;
+      const t = now();
+      // nearest pending note in this lane
+      let best = -1, bestD = 1e9;
+      for (let i = 0; i < chart.length; i++) {
+        if (states[i] !== 0 || chart[i][1] !== lane) continue;
+        const d = Math.abs(chart[i][0] / 1000 - t);
+        if (d < bestD) { bestD = d; best = i; }
+        if (chart[i][0] / 1000 - t > 0.5) break;
+      }
+      const lx = (lane + 0.5) * (CW / 3);
+      if (best >= 0 && bestD <= GOOD) {
+        states[best] = 1;
+        judged++; hits++;
+        combo++;
+        maxCombo = Math.max(maxCombo, combo);
+        const perfect = bestD <= PERFECT;
+        const mult = 1 + Math.min(3, combo / 20);
+        score += (perfect ? 100 : 60) * mult;
+        floaters.push({ x: lx, y: HITY - 40, txt: perfect ? 'PERFECT' : 'GOOD', c: perfect ? '#39d98a' : LANES[lane].color, life: 0.7 });
+        setKit(true);
+      } else {
+        // ghost hit — you flailed; the kit drops out
+        combo = 0;
+        floaters.push({ x: lx, y: HITY - 40, txt: 'GHOST', c: '#ff8fa0', life: 0.6 });
+        setKit(false);
+      }
+    }
+    addEventListener('keydown', (e) => {
+      if (e.repeat) return;
+      const k = e.key.toLowerCase();
+      LANES.forEach((l, i) => { if (l.keys.includes(k)) laneHit(i); });
+    });
+    canvas.addEventListener('pointerdown', (e) => {
+      const r = canvas.getBoundingClientRect();
+      const lane = Math.min(2, Math.max(0, ((e.clientX - r.left) / r.width * 3) | 0));
+      laneHit(lane);
+    });
+
+    // ---- loop ----
+    let lastT = performance.now();
+    (function loop(nowMs: number) {
+      const dt = Math.min(0.05, (nowMs - lastT) / 1000);
+      lastT = nowMs;
+      const t = now();
+
+      // misses
+      if (playing) {
+        for (let i = 0; i < chart.length; i++) {
+          if (states[i] !== 0) continue;
+          const nt = chart[i][0] / 1000;
+          if (nt < t - GOOD) {
+            states[i] = 2;
+            judged++;
+            combo = 0;
+            setKit(false);
+            const lx = (chart[i][1] + 0.5) * (CW / 3);
+            floaters.push({ x: lx, y: HITY - 40, txt: 'MISS', c: '#ff8fa0', life: 0.6 });
+          }
+          if (nt > t + 0.2) break;
+        }
+      }
+
+      // draw highway
+      cx2.clearRect(0, 0, CW, CH);
+      for (let i = 0; i < 3; i++) {
+        const x0 = i * (CW / 3);
+        cx2.fillStyle = `rgba(255,255,255,${0.03 + flashes[i] * 0.1})`;
+        cx2.fillRect(x0 + 4, 0, CW / 3 - 8, CH);
+        flashes[i] = Math.max(0, flashes[i] - dt * 5);
+        // lane label pads at hit line
+        cx2.strokeStyle = LANES[i].color;
+        cx2.lineWidth = 5;
+        cx2.globalAlpha = 0.9;
+        cx2.beginPath();
+        (cx2 as any).roundRect(x0 + 30, HITY - 26, CW / 3 - 60, 52, 26);
+        cx2.stroke();
+        cx2.globalAlpha = 1;
+      }
+      // notes
+      if (chart.length) {
+        for (let i = 0; i < chart.length; i++) {
+          const nt = chart[i][0] / 1000;
+          if (nt < t - 0.3 || nt > t + APPROACH) continue;
+          if (states[i] === 1) continue;
+          const lane = chart[i][1];
+          const y = HITY - ((nt - t) / APPROACH) * (HITY - 30);
+          const x0 = lane * (CW / 3);
+          cx2.fillStyle = states[i] === 2 ? 'rgba(255,255,255,0.15)' : LANES[lane].color;
+          cx2.beginPath();
+          (cx2 as any).roundRect(x0 + 36, y - 17, CW / 3 - 72, 34, 17);
+          cx2.fill();
+        }
+      }
+      // floaters
+      floaters.forEach((f) => {
+        f.life -= dt; f.y -= 60 * dt;
+        cx2.globalAlpha = Math.max(0, f.life / 0.7);
+        cx2.fillStyle = f.c;
+        cx2.font = `900 34px 'Archivo Variable', 'Arial Black', sans-serif`;
+        cx2.textAlign = 'center';
+        cx2.fillText(f.txt, f.x, f.y);
+        cx2.globalAlpha = 1;
+      });
+      floaters = floaters.filter((f) => f.life > 0);
+
+      // HUD
+      $('d-score').textContent = String(score | 0);
+      $('d-acc').textContent = judged > 4 ? `${((hits / judged) * 100) | 0}%` : '—';
+      $('d-combo').textContent = combo >= 4 ? `${combo} combo ×${(1 + Math.min(3, combo / 20)).toFixed(1)}` : '';
+
+      // song end
+      if (playing && t >= dur()) {
+        playing = false;
+        stopAll();
+        $('d-icon-play').classList.remove('hidden');
+        $('d-icon-pause').classList.add('hidden');
+        const acc = judged ? (hits / judged) * 100 : 0;
+        $('d-r-tag').textContent =
+          acc >= 92 ? 'the kit was yours' : acc >= 70 ? 'solid pocket' : acc >= 40 ? 'keep the day job (for now)' : 'the drummer noticed';
+        $('d-r-score').textContent = String(score | 0);
+        $('d-r-detail').textContent = `${acc | 0}% accuracy · ${maxCombo} max combo · ${hits}/${chart.length} notes`;
+        $('d-results').classList.remove('hidden');
+        $('d-results').classList.add('flex');
+        offset = 0;
+      }
+      requestAnimationFrame(loop);
+    })(performance.now());
+  </script>
+</BaseLayout>
