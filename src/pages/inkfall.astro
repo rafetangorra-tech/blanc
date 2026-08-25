@@ -1,0 +1,424 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/url';
+const homeHref = withBase('/');
+---
+
+<BaseLayout
+  title="inkfall — blanc"
+  description="You are a drop of ink falling down the blank page. Steer, survive the blots, catch the words — whatever you catch becomes the poem you fell into."
+>
+  <header
+    class="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-5 py-4 text-white mix-blend-difference sm:px-8"
+  >
+    <a href={homeHref} class="text-sm uppercase tracking-[0.2em]">← blanc</a>
+    <p class="hidden text-xs uppercase tracking-[0.3em] text-white/60 sm:block">
+      a game from the pen's world
+    </p>
+  </header>
+
+  <main
+    class="flex min-h-screen flex-col items-center px-4 pb-10 pt-24 sm:px-8"
+    style="background: var(--canvas); color: var(--canvas-ink);"
+  >
+    <!-- intro -->
+    <div id="ik-intro" class="flex max-w-xl flex-1 flex-col items-center justify-center text-center">
+      <p class="text-xs uppercase tracking-[0.4em] opacity-50">inspired by the pen</p>
+      <h1 class="mt-3 text-6xl lowercase sm:text-7xl">inkfall</h1>
+      <p class="mt-5 max-w-md opacity-70">
+        You are a drop of ink falling down the blank page. Steer with your
+        finger or arrow keys. Miss the blots — three hits and the pen runs
+        dry. Catch the words drifting past:
+        <span class="font-semibold">whatever you catch becomes the poem you fell into.</span>
+      </p>
+      <p class="mt-3 text-xs uppercase tracking-[0.2em] opacity-45">
+        fall far enough and the page changes worlds
+      </p>
+      <p id="ik-best" class="mt-4 font-mono text-sm opacity-60"></p>
+      <button id="ik-start" class="ikbtn-primary mt-8">Fall</button>
+    </div>
+
+    <!-- game -->
+    <div id="ik-game" class="hidden w-full max-w-[560px] flex-1 flex-col items-center">
+      <div class="mb-2 flex w-full items-baseline justify-between font-mono text-sm">
+        <span id="ik-dist">0m</span>
+        <span id="ik-lives">🖋🖋🖋</span>
+        <span id="ik-words">0 words</span>
+      </div>
+      <canvas
+        id="ik-canvas"
+        class="w-full rounded-2xl border border-black/10"
+        style="aspect-ratio: 3/4; touch-action: none; display: block;"
+      ></canvas>
+    </div>
+
+    <!-- game over -->
+    <div id="ik-over" class="hidden max-w-xl flex-1 flex-col items-center justify-center text-center">
+      <p class="text-xs uppercase tracking-[0.4em] opacity-50">the pen ran dry</p>
+      <p class="mt-3 font-mono text-6xl" id="ik-final-score"></p>
+      <p class="mt-1 text-sm opacity-60" id="ik-final-detail"></p>
+      <div class="mt-7 w-full rounded-2xl border border-black/10 bg-white/40 p-6">
+        <p class="text-xs uppercase tracking-[0.35em]" style="color:#C7761F;">
+          the poem you fell into
+        </p>
+        <p id="ik-poem" class="mt-3 text-xl italic leading-relaxed opacity-85" style="font-family: Georgia, serif;"></p>
+      </div>
+      <div class="mt-7 flex flex-wrap justify-center gap-3">
+        <button id="ik-export" class="ikbtn-primary">Keep the poem</button>
+        <button id="ik-again" class="ikbtn-secondary">Fall again</button>
+      </div>
+      <p class="mt-8 text-[10px] uppercase tracking-[0.35em] opacity-40">
+        blanc · inkfall · one group. many worlds.
+      </p>
+    </div>
+  </main>
+
+  <style>
+    .ikbtn-primary {
+      padding: 14px 38px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #f7f6f4;
+      background: #101010;
+      transition: transform 150ms ease;
+    }
+    .ikbtn-primary:hover { transform: translateY(-2px); }
+    .ikbtn-secondary {
+      padding: 12px 24px;
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 700;
+      border: 1px solid currentColor;
+      opacity: 0.65;
+    }
+    .ikbtn-secondary:hover { opacity: 1; }
+  </style>
+
+  <script>
+    // ————— inkfall — an original arcade game from the pen's world —————
+    const $ = (id: string) => document.getElementById(id)!;
+    const canvas = $('ik-canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const W = 900, H = 1200;
+    canvas.width = W; canvas.height = H;
+
+    // the worlds you fall through (cycles, 350m per band)
+    const BANDS = [
+      { name: 'the blank page', bg: '#f7f6f4', ink: '#101010', accent: '#C7761F',
+        words: ['whisper', 'honest', 'begin', 'blank', 'breathe', 'open'] },
+      { name: 'HOUSE WORLD', bg: '#0B0B14', ink: '#EDEDF7', accent: '#00E5FF',
+        words: ['pulse', 'neon', 'midnight', 'body', 'electric', 'motion', 'bass'] },
+      { name: 'GOLDEN WORLD', bg: '#F6EAD3', ink: '#2A1D0A', accent: '#C7761F',
+        words: ['golden', 'tender', 'forever', 'heartbeat', 'devotion', 'glow', 'stay'] },
+      { name: 'VELVET WORLD', bg: '#150609', ink: '#F3E7EA', accent: '#E23A55',
+        words: ['crimson', 'smoke', 'burn', 'desire', 'velvet', 'ache', 'wild'] },
+    ];
+    const CONNECT = ['i', 'you', 'we', 'like', 'and', 'the', 'my', 'never', 'always', 'still'];
+    const BAND_M = 350;
+    const PX_PER_M = 10;
+
+    // sounds
+    let actx: AudioContext | null = null;
+    function blip(f: number, d = 0.08, type: OscillatorType = 'sine', g = 0.12) {
+      actx = actx || new (window.AudioContext || (window as any).webkitAudioContext)();
+      const o = actx.createOscillator(), gn = actx.createGain();
+      o.type = type; o.frequency.value = f;
+      gn.gain.setValueAtTime(g, actx.currentTime);
+      gn.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + d);
+      o.connect(gn); gn.connect(actx.destination);
+      o.start(); o.stop(actx.currentTime + d);
+    }
+    const sCatch = () => { blip(740, 0.1); setTimeout(() => blip(988, 0.14), 70); };
+    const sHit = () => blip(120, 0.25, 'sawtooth', 0.18);
+    const sWorld = () => { blip(523, 0.1); setTimeout(() => blip(784, 0.16), 100); };
+    const sDry = () => { blip(220, 0.3, 'triangle'); setTimeout(() => blip(165, 0.5, 'triangle'), 250); };
+
+    type Ent = { x: number; wy: number; r: number; word?: string; vx?: number; caught?: boolean };
+    let player = { x: W / 2, tx: W / 2, y: 300 };
+    let cam = 0, dist = 0, lives = 3, inv = 0;
+    let words: Ent[] = [], blots: Ent[] = [];
+    let caughtWords: string[] = [];
+    let trail: { x: number; wy: number; c: string }[] = [];
+    let particles: { x: number; y: number; vx: number; vy: number; life: number; c: string }[] = [];
+    let running = false, last = 0, spawnW = 0, spawnB = 0, lastBand = -1;
+    let bandFlash = 0, bandFlashName = '';
+
+    const bandAt = (m: number) => BANDS[((m / BAND_M) | 0) % BANDS.length];
+
+    function reset() {
+      player = { x: W / 2, tx: W / 2, y: 300 };
+      cam = 0; dist = 0; lives = 3; inv = 0;
+      words = []; blots = []; caughtWords = []; trail = []; particles = [];
+      spawnW = 0; spawnB = 0.8; lastBand = 0; bandFlash = 0;
+    }
+
+    // input
+    function setTX(clientX: number) {
+      const r = canvas.getBoundingClientRect();
+      player.tx = ((clientX - r.left) / r.width) * W;
+    }
+    canvas.addEventListener('pointermove', (e) => setTX(e.clientX));
+    canvas.addEventListener('pointerdown', (e) => setTX(e.clientX));
+    const keys: Record<string, boolean> = {};
+    addEventListener('keydown', (e) => (keys[e.key] = true));
+    addEventListener('keyup', (e) => (keys[e.key] = false));
+
+    function spawn(dt: number) {
+      const band = bandAt(dist);
+      spawnW -= dt;
+      if (spawnW <= 0) {
+        spawnW = 1.3 + Math.random() * 0.9;
+        const pool = Math.random() < 0.75 ? band.words : CONNECT;
+        words.push({
+          x: 80 + Math.random() * (W - 160),
+          wy: cam + H + 60,
+          r: 34,
+          word: pool[(Math.random() * pool.length) | 0],
+        });
+      }
+      spawnB -= dt;
+      const difficulty = Math.min(1, dist / 1500);
+      if (spawnB <= 0) {
+        spawnB = Math.max(0.35, 1.1 - difficulty * 0.7) + Math.random() * 0.5;
+        blots.push({
+          x: 60 + Math.random() * (W - 120),
+          wy: cam + H + 60,
+          r: 22 + Math.random() * 26,
+          vx: Math.random() < 0.35 ? (Math.random() - 0.5) * 160 : 0,
+        });
+      }
+    }
+
+    function splash(x: number, y: number, c: string, n = 14) {
+      for (let i = 0; i < n; i++) {
+        const a = Math.random() * Math.PI * 2, v = 60 + Math.random() * 220;
+        particles.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0.6, c });
+      }
+    }
+
+    function tick(t: number) {
+      if (!running) return;
+      const dt = Math.min(0.05, (t - last) / 1000);
+      last = t;
+      const speed = (140 + Math.min(260, dist * 0.18)) * 1; // px/s, ramps
+      cam += speed * dt;
+      dist = cam / PX_PER_M;
+      const band = bandAt(dist);
+      const bandIdx = ((dist / BAND_M) | 0) % BANDS.length;
+      if (bandIdx !== lastBand) {
+        lastBand = bandIdx;
+        bandFlash = 1.6; bandFlashName = band.name;
+        sWorld();
+      }
+
+      // player
+      if (keys['ArrowLeft'] || keys['a']) player.tx -= 420 * dt;
+      if (keys['ArrowRight'] || keys['d']) player.tx += 420 * dt;
+      player.tx = Math.max(30, Math.min(W - 30, player.tx));
+      player.x += (player.tx - player.x) * Math.min(1, dt * 10);
+      const pwy = cam + player.y;
+      trail.push({ x: player.x, wy: pwy, c: band.ink });
+      if (trail.length > 900) trail.shift();
+      if (inv > 0) inv -= dt;
+
+      spawn(dt);
+      blots.forEach((b) => {
+        if (b.vx) {
+          b.x += b.vx * dt;
+          if (b.x < 50 || b.x > W - 50) b.vx = -b.vx!;
+        }
+      });
+      // collisions
+      words.forEach((w) => {
+        if (!w.caught && Math.hypot(w.x - player.x, w.wy - pwy) < w.r + 16) {
+          w.caught = true;
+          caughtWords.push(w.word!);
+          splash(player.x, player.y, band.accent, 10);
+          sCatch();
+        }
+      });
+      if (inv <= 0) {
+        for (const b of blots) {
+          if (Math.hypot(b.x - player.x, b.wy - pwy) < b.r + 12) {
+            lives--; inv = 1.2;
+            splash(player.x, player.y, band.ink, 20);
+            sHit();
+            $('ik-lives').textContent = '🖋'.repeat(Math.max(0, lives));
+            if (lives <= 0) return gameOver();
+            break;
+          }
+        }
+      }
+      words = words.filter((w) => !w.caught && w.wy > cam - 80);
+      blots = blots.filter((b) => b.wy > cam - 80);
+      particles.forEach((p) => {
+        p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 500 * dt; p.life -= dt;
+      });
+      particles = particles.filter((p) => p.life > 0);
+
+      // ---- draw ----
+      ctx.fillStyle = band.bg;
+      ctx.fillRect(0, 0, W, H);
+      // faint page ruling
+      ctx.strokeStyle = band.ink + '10';
+      ctx.lineWidth = 1;
+      for (let y = -(cam % 90); y < H; y += 90) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(W - 40, y); ctx.stroke();
+      }
+      // trail
+      ctx.lineWidth = 7;
+      ctx.lineCap = 'round';
+      for (let i = 1; i < trail.length; i++) {
+        const a = trail[i - 1], b = trail[i];
+        const sy = a.wy - cam, sy2 = b.wy - cam;
+        if (sy2 < -20 || sy > H + 20) continue;
+        ctx.strokeStyle = b.c;
+        ctx.globalAlpha = 0.25 + 0.75 * (i / trail.length);
+        ctx.beginPath(); ctx.moveTo(a.x, sy); ctx.lineTo(b.x, sy2); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      // words
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      words.forEach((w) => {
+        const sy = w.wy - cam;
+        if (sy < -60 || sy > H + 60) return;
+        ctx.font = `700 26px 'Inter Variable', Arial, sans-serif`;
+        const tw = ctx.measureText(w.word!).width + 34;
+        ctx.fillStyle = band.accent;
+        ctx.beginPath();
+        (ctx as any).roundRect(w.x - tw / 2, sy - 22, tw, 44, 22);
+        ctx.fill();
+        ctx.fillStyle = band.bg;
+        ctx.fillText(w.word!, w.x, sy + 1);
+      });
+      // blots
+      blots.forEach((b) => {
+        const sy = b.wy - cam;
+        if (sy < -80 || sy > H + 80) return;
+        ctx.fillStyle = band.ink;
+        ctx.beginPath();
+        ctx.ellipse(b.x, sy, b.r, b.r * 0.85, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // blot satellites
+        ctx.beginPath(); ctx.arc(b.x + b.r * 0.9, sy - b.r * 0.5, b.r * 0.25, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(b.x - b.r * 0.8, sy + b.r * 0.55, b.r * 0.18, 0, Math.PI * 2); ctx.fill();
+      });
+      // particles
+      particles.forEach((p) => {
+        ctx.globalAlpha = Math.max(0, p.life / 0.6);
+        ctx.fillStyle = p.c;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+      // player drop (teardrop)
+      const blinkOff = inv > 0 && ((t / 90) | 0) % 2 === 0;
+      if (!blinkOff) {
+        ctx.fillStyle = band.ink;
+        ctx.beginPath();
+        ctx.moveTo(player.x, player.y - 26);
+        ctx.bezierCurveTo(player.x + 20, player.y - 4, player.x + 16, player.y + 14, player.x, player.y + 18);
+        ctx.bezierCurveTo(player.x - 16, player.y + 14, player.x - 20, player.y - 4, player.x, player.y - 26);
+        ctx.fill();
+        ctx.fillStyle = band.bg + '55';
+        ctx.beginPath(); ctx.arc(player.x - 5, player.y + 2, 5, 0, Math.PI * 2); ctx.fill();
+      }
+      // band flash
+      if (bandFlash > 0) {
+        bandFlash -= dt;
+        ctx.globalAlpha = Math.min(1, bandFlash);
+        ctx.fillStyle = band.ink;
+        ctx.font = `900 54px 'Archivo Variable', 'Arial Black', sans-serif`;
+        ctx.fillText(bandFlashName.toLowerCase(), W / 2, 140);
+        ctx.globalAlpha = 1;
+      }
+
+      $('ik-dist').textContent = `${dist | 0}m`;
+      $('ik-words').textContent = `${caughtWords.length} words`;
+      requestAnimationFrame(tick);
+    }
+
+    function score() {
+      return (dist | 0) + caughtWords.length * 25;
+    }
+    function gameOver() {
+      running = false;
+      sDry();
+      const s = score();
+      const best = Math.max(s, Number(localStorage.getItem('blanc-inkfall-best') || 0));
+      localStorage.setItem('blanc-inkfall-best', String(best));
+      $('ik-final-score').textContent = String(s);
+      $('ik-final-detail').textContent = `${dist | 0}m fallen · ${caughtWords.length} words caught · best ${best}`;
+      $('ik-poem').textContent = caughtWords.length
+        ? caughtWords.join(' ')
+        : '(you fell in silence)';
+      $('ik-game').classList.add('hidden');
+      $('ik-game').classList.remove('flex');
+      $('ik-over').classList.remove('hidden');
+      $('ik-over').classList.add('flex');
+    }
+
+    function startGame() {
+      reset();
+      $('ik-lives').textContent = '🖋🖋🖋';
+      $('ik-intro').classList.add('hidden');
+      $('ik-intro').classList.remove('flex');
+      $('ik-over').classList.add('hidden');
+      $('ik-over').classList.remove('flex');
+      $('ik-game').classList.remove('hidden');
+      $('ik-game').classList.add('flex');
+      running = true;
+      last = performance.now();
+      requestAnimationFrame(tick);
+    }
+    $('ik-start').addEventListener('click', startGame);
+    $('ik-again').addEventListener('click', startGame);
+
+    const best0 = localStorage.getItem('blanc-inkfall-best');
+    if (best0) $('ik-best').textContent = `your best fall: ${best0}`;
+
+    // export the poem card
+    $('ik-export').addEventListener('click', () => {
+      const CW = 1080, CH = 1350;
+      const c = document.createElement('canvas');
+      c.width = CW; c.height = CH;
+      const x = c.getContext('2d')!;
+      x.fillStyle = '#f7f6f4';
+      x.fillRect(0, 0, CW, CH);
+      x.textAlign = 'center';
+      x.fillStyle = 'rgba(0,0,0,0.45)';
+      x.font = `600 26px 'Inter Variable', Arial, sans-serif`;
+      x.fillText('the poem i fell into', CW / 2, 130);
+      // wrap poem
+      x.fillStyle = '#1a1a1a';
+      x.font = `italic 500 44px Georgia, serif`;
+      const poem = caughtWords.length ? caughtWords.join(' ') : '(fell in silence)';
+      const wordsArr = poem.split(' ');
+      let line = '', y = 320;
+      wordsArr.forEach((w) => {
+        const test = line ? line + ' ' + w : w;
+        if (x.measureText(test).width > CW - 200) {
+          x.fillText(line, CW / 2, y); y += 64; line = w;
+        } else line = test;
+      });
+      if (line) x.fillText(line, CW / 2, y);
+      x.fillStyle = 'rgba(0,0,0,0.45)';
+      x.font = `500 26px 'Inter Variable', Arial, sans-serif`;
+      x.fillText(`${dist | 0}m · ${score()} pts`, CW / 2, y + 90);
+      x.fillStyle = '#0a0a0a';
+      x.font = `900 64px 'Archivo Variable', 'Arial Black', sans-serif`;
+      x.fillText('blanc', CW / 2, CH - 150);
+      x.fillStyle = 'rgba(0,0,0,0.45)';
+      x.font = `500 26px 'Inter Variable', Arial, sans-serif`;
+      x.fillText('inkfall · one group. many worlds.', CW / 2, CH - 100);
+      const a = document.createElement('a');
+      a.download = 'blanc-inkfall.png';
+      a.href = c.toDataURL('image/png');
+      a.click();
+    });
+  </script>
+</BaseLayout>
