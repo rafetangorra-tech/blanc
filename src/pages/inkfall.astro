@@ -187,7 +187,7 @@ const homeHref = withBase('/');
     ];
     const BAND_M = 300;
     const PX_PER_M = 10;
-    const SURGE_EVERY = 8; // seconds — it gets faster. it always gets faster.
+    const SURGE_EVERY = 6; // seconds — it gets faster. it always gets faster.
 
     // sounds
     let actx: AudioContext | null = null;
@@ -207,7 +207,7 @@ const homeHref = withBase('/');
     const sDry = () => { blip(220, 0.3, 'triangle'); setTimeout(() => blip(165, 0.5, 'triangle'), 250); };
     const sComplete = () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => blip(f, 0.2), i * 120));
 
-    type Frag = { x: number; wy: number; idx: number; caught?: boolean };
+    type Frag = { x: number; wy: number; idx: number; w: number; caught?: boolean };
     type Block = { x: number; wy: number; w: number; h: number; vx: number };
 
     let poem = POEMS[0];
@@ -222,7 +222,7 @@ const homeHref = withBase('/');
     let bandFlash = 0, bandFlashName = '';
 
     const bandAt = (m: number) => BANDS[((m / BAND_M) | 0) % BANDS.length];
-    const speedMult = () => Math.min(3.4, Math.pow(1.09, surges) * (1 + elapsed * 0.004));
+    const speedMult = () => Math.min(4.2, Math.pow(1.12, surges) * (1 + elapsed * 0.006));
 
     function pickPoem() {
       const i = (Number(localStorage.getItem('blanc-inkfall-poem') || -1) + 1) % POEMS.length;
@@ -254,7 +254,7 @@ const homeHref = withBase('/');
       // fragments: the poem falls in order; missed ones come back around
       spawnF -= dt;
       if (spawnF <= 0) {
-        spawnF = Math.max(1.2, 2.4 - surges * 0.08);
+        spawnF = Math.max(1.0, 2.2 - surges * 0.09);
         const remaining = poem.frags.map((_, i) => i).filter((i) => !caught[i]);
         if (remaining.length) {
           // prefer the earliest uncaught fragment, sometimes jump ahead
@@ -262,21 +262,28 @@ const homeHref = withBase('/');
             ? remaining[0]
             : remaining[(Math.random() * remaining.length) | 0];
           if (!frags.some((f) => f.idx === idx && !f.caught)) {
-            frags.push({ x: 100 + Math.random() * (W - 200), wy: cam + H + 60, idx });
+            ctx.font = `italic 600 24px Georgia, serif`;
+            const fw = ctx.measureText(poem.frags[idx]).width + 40;
+            frags.push({
+              x: fw / 2 + 40 + Math.random() * (W - fw - 80),
+              wy: cam + H + 60,
+              idx,
+              w: fw,
+            });
           }
         }
       }
       // writer's block
       spawnB -= dt;
       if (spawnB <= 0) {
-        spawnB = Math.max(0.4, 1.5 - surges * 0.09) + Math.random() * 0.45;
+        spawnB = Math.max(0.3, 1.3 - surges * 0.1) + Math.random() * 0.35;
         const bw = 170 + Math.random() * 130;
         blocks.push({
           x: bw / 2 + Math.random() * (W - bw),
           wy: cam + H + 60,
           w: bw,
           h: 40,
-          vx: Math.random() < 0.45 ? (Math.random() < 0.5 ? -1 : 1) * (90 + surges * 14) : 0,
+          vx: Math.random() < 0.6 ? (Math.random() < 0.5 ? -1 : 1) * (110 + surges * 20) : 0,
         });
       }
     }
@@ -297,7 +304,7 @@ const homeHref = withBase('/');
       if (elapsed > (surges + 1) * SURGE_EVERY) {
         surges++; surgeFlash = 0.8; sSurge();
       }
-      const speed = 150 * speedMult();
+      const speed = 175 * speedMult();
       cam += speed * dt;
       dist = cam / PX_PER_M;
       const band = bandAt(dist);
@@ -324,9 +331,13 @@ const homeHref = withBase('/');
           if (b.x - b.w / 2 < 20 || b.x + b.w / 2 > W - 20) b.vx = -b.vx;
         }
       });
-      // catch fragments
+      // catch fragments — the WHOLE pill is catchable, edges included
       frags.forEach((f) => {
-        if (!f.caught && Math.hypot(f.x - player.x, f.wy - pwy) < 52) {
+        if (f.caught) return;
+        const fy = f.wy - cam;
+        const cx = Math.max(f.x - f.w / 2, Math.min(player.x, f.x + f.w / 2));
+        const cy = Math.max(fy - 24, Math.min(player.y, fy + 24));
+        if (Math.hypot(player.x - cx, player.y - cy) < 20) {
           f.caught = true;
           caught[f.idx] = true;
           splash(player.x, player.y, band.accent, 10);
@@ -391,10 +402,9 @@ const homeHref = withBase('/');
         if (sy < -60 || sy > H + 60) return;
         const text = poem.frags[f.idx];
         ctx.font = `italic 600 24px Georgia, serif`;
-        const tw = ctx.measureText(text).width + 40;
         ctx.fillStyle = band.accent;
         ctx.beginPath();
-        (ctx as any).roundRect(f.x - tw / 2, sy - 24, tw, 48, 24);
+        (ctx as any).roundRect(f.x - f.w / 2, sy - 24, f.w, 48, 24);
         ctx.fill();
         ctx.fillStyle = band.bg;
         ctx.fillText(text, f.x, sy + 1);
