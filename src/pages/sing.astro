@@ -69,8 +69,25 @@ const homeHref = withBase('/');
         <a id="s-download" class="singbtn hidden" download="blanc-my-cover.webm">⬇ Keep my cover</a>
       </div>
 
+      <!-- pitch lane — follow Nick's line with your voice -->
+      <div class="mx-auto mt-6 w-full max-w-2xl">
+        <div class="flex items-baseline justify-between font-mono text-sm text-white/80">
+          <span id="s-score">0</span>
+          <span id="s-combo" class="text-xs uppercase tracking-[0.25em] text-white/50"></span>
+          <span id="s-acc">—</span>
+        </div>
+        <canvas
+          id="s-pitchlane"
+          class="mt-2 w-full rounded-2xl border border-white/15 bg-black/40"
+          style="height: 210px; display: block;"
+        ></canvas>
+        <p class="mt-2 text-[10px] uppercase tracking-[0.3em] text-white/40">
+          nick's melody · sing it in any octave — lock on to score
+        </p>
+      </div>
+
       <!-- voice meter -->
-      <div class="mx-auto mt-6 h-3 w-full max-w-xl overflow-hidden rounded-full bg-white/10">
+      <div class="mx-auto mt-4 h-3 w-full max-w-xl overflow-hidden rounded-full bg-white/10">
         <div id="s-meter" class="h-full w-0 rounded-full" style="background: linear-gradient(90deg,#39d98a,#e8a93c 70%,#e23a55);"></div>
       </div>
       <p class="mt-2 text-[10px] uppercase tracking-[0.3em] text-white/40">your voice</p>
@@ -151,6 +168,9 @@ const homeHref = withBase('/');
 
     let instBuf: AudioBuffer | null = null;
     let guideBuf: AudioBuffer | null = null;
+    // pitch chart extracted from Nick's actual vocal stem
+    let chart: { step: number; midi10: number[] } | null = null;
+    let chartLo = 48, chartHi = 72;
     let srcs: AudioBufferSourceNode[] = [];
     let playing = false, startedAt = 0, offset = 0;
 
@@ -169,6 +189,14 @@ const homeHref = withBase('/');
         instBuf = await load(`${BASE}/stems/instrumental.mp3`);
         $('s-loadfill').style.width = '70%';
         guideBuf = await load(`${BASE}/stems/vocals.mp3`);
+        try {
+          chart = await (await fetch(`${BASE}/stems/vocals-pitch.json`)).json();
+          const vals = chart!.midi10.filter((x) => x > 0).map((x) => x / 10).sort((a, b) => a - b);
+          if (vals.length) {
+            chartLo = vals[(vals.length * 0.05) | 0] - 2;
+            chartHi = vals[(vals.length * 0.95) | 0] + 2;
+          }
+        } catch {}
         $('s-loadfill').style.width = '100%';
         const l = $('s-loader');
         l.style.transition = 'opacity .5s';
@@ -238,7 +266,7 @@ const homeHref = withBase('/');
         await ctx.resume();
         const micSrc = ctx.createMediaStreamSource(stream);
         analyser = ctx.createAnalyser();
-        analyser.fftSize = 512;
+        analyser.fftSize = 2048; // enough window for pitch detection
         micSrc.connect(analyser);
         const micRec = ctx.createGain();
         micRec.gain.value = 1.0;
@@ -288,9 +316,57 @@ const homeHref = withBase('/');
       }
     });
 
-    // meter + time loop
+    // ---- live pitch detection (normalized autocorrelation) ----
+    const pitchBuf = new Float32Array(2048);
+    function detectPitch(): number | null {
+      if (!analyser) return null;
+      analyser.getFloatTimeDomainData(pitchBuf);
+      let e = 0;
+      for (let i = 0; i < pitchBuf.length; i++) e += pitchBuf[i] * pitchBuf[i];
+      if (Math.sqrt(e / pitchBuf.length) < 0.012) return null; // silence
+      const sr = ctx.sampleRate;
+      const lagMin = Math.floor(sr / 600), lagMax = Math.floor(sr / 70);
+      let bestLag = 0, bestV = 0;
+      for (let lag = lagMin; lag <= lagMax; lag++) {
+        let s = 0;
+        for (let i = 0; i < pitchBuf.length - lag; i += 2) s += pitchBuf[i] * pitchBuf[i + lag];
+        const v = (2 * s) / e;
+        if (v > bestV) { bestV = v; bestLag = lag; }
+      }
+      if (bestV < 0.5 || !bestLag) return null;
+      return 69 + 12 * Math.log2(sr / bestLag / 440);
+    }
+    const chartMidiAt = (t: number): number | null => {
+      if (!chart) return null;
+      const v = chart.midi10[(t / chart.step) | 0];
+      return v ? v / 10 : null;
+    };
+    // fold the singer's octave onto the chart's register (Rock Band style)
+    function foldToward(midi: number, target: number): number {
+      let m = midi;
+      while (m < target - 6) m += 12;
+      while (m > target + 6) m -= 12;
+      return m;
+    }
+
+    // ---- game state ----
+    let score = 0, matchedT = 0, voicedT = 0, lockT = 0;
+    const playerTrail: { t: number; midi: number; hit: boolean }[] = [];
+    const lane = $('s-pitchlane') as HTMLCanvasElement;
+    const lctx = lane.getContext('2d')!;
+    const LW = 1200, LH = 420;
+    lane.width = LW; lane.height = LH;
+    const AHEAD = 3.5, BEHIND = 1.2;
+    const NOWX = LW * 0.28;
+    const midiY = (m: number) =>
+      LH - ((Math.max(chartLo, Math.min(chartHi, m)) - chartLo) / (chartHi - chartLo)) * (LH - 40) - 20;
+
+    // meter + pitch-lane + time loop
     const meterData = new Uint8Array(256);
-    (function loop() {
+    let lastT = performance.now();
+    (function loop(nowMs: number) {
+      const dt = Math.min(0.05, (nowMs - lastT) / 1000);
+      lastT = nowMs;
       if (analyser) {
         analyser.getByteTimeDomainData(meterData);
         let sum = 0;
@@ -302,6 +378,92 @@ const homeHref = withBase('/');
         $('s-meter').style.width = `${Math.min(100, rms * 260)}%`;
       }
       const t = Math.min(now(), dur());
+
+      // ---- scoring ----
+      const target = playing ? chartMidiAt(t) : null;
+      let sung: number | null = null;
+      if (analyser) sung = detectPitch();
+      let hit = false;
+      if (playing && target != null) {
+        voicedT += dt;
+        if (sung != null) {
+          const folded = foldToward(sung, target);
+          const diff = Math.abs(folded - target);
+          if (diff <= 1.6) {
+            hit = true;
+            matchedT += dt;
+            lockT += dt;
+            const mult = 1 + Math.min(3, lockT / 2);
+            score += 120 * dt * mult;
+          } else lockT = 0;
+        } else lockT = 0;
+      } else lockT = 0;
+      if (sung != null && playing) {
+        const ref = target ?? (chartLo + chartHi) / 2;
+        playerTrail.push({ t, midi: foldToward(sung, ref), hit });
+        while (playerTrail.length && playerTrail[0].t < t - BEHIND - 0.2) playerTrail.shift();
+      }
+      $('s-score').textContent = String(score | 0);
+      $('s-acc').textContent = voicedT > 1 ? `${((matchedT / voicedT) * 100) | 0}%` : '—';
+      const mult = 1 + Math.min(3, lockT / 2);
+      $('s-combo').textContent = lockT > 0.4 ? `locked on ×${mult.toFixed(1)}` : '';
+
+      // ---- draw the lane ----
+      lctx.clearRect(0, 0, LW, LH);
+      if (chart) {
+        const tx = (tt: number) => NOWX + ((tt - t) / AHEAD) * (LW - NOWX);
+        // reference melody segments
+        const from = Math.max(0, ((t - BEHIND) / chart.step) | 0);
+        const to = Math.min(chart.midi10.length - 1, ((t + AHEAD) / chart.step) | 0);
+        lctx.lineWidth = 9;
+        lctx.lineCap = 'round';
+        for (let i = from; i < to; i++) {
+          const a = chart.midi10[i], b = chart.midi10[i + 1];
+          if (!a || !b) continue;
+          const t1 = i * chart.step, t2 = (i + 1) * chart.step;
+          const past = t2 < t;
+          lctx.strokeStyle = past ? 'rgba(232,169,60,0.25)' : 'rgba(232,169,60,0.85)';
+          lctx.beginPath();
+          lctx.moveTo(tx(t1), midiY(a / 10));
+          lctx.lineTo(tx(t2), midiY(b / 10));
+          lctx.stroke();
+        }
+        // now line
+        lctx.strokeStyle = 'rgba(255,255,255,0.25)';
+        lctx.lineWidth = 2;
+        lctx.beginPath(); lctx.moveTo(NOWX, 0); lctx.lineTo(NOWX, LH); lctx.stroke();
+        // player trail
+        lctx.lineWidth = 6;
+        for (let i = 1; i < playerTrail.length; i++) {
+          const p0 = playerTrail[i - 1], p1 = playerTrail[i];
+          if (p1.t - p0.t > 0.12) continue;
+          const x0 = NOWX - ((t - p0.t) / BEHIND) * (NOWX - 20);
+          const x1 = NOWX - ((t - p1.t) / BEHIND) * (NOWX - 20);
+          lctx.strokeStyle = p1.hit ? '#39d98a' : 'rgba(255,255,255,0.55)';
+          lctx.beginPath();
+          lctx.moveTo(x0, midiY(p0.midi));
+          lctx.lineTo(x1, midiY(p1.midi));
+          lctx.stroke();
+        }
+        // needle
+        if (sung != null && playing) {
+          const ref = target ?? (chartLo + chartHi) / 2;
+          const y = midiY(foldToward(sung, ref));
+          lctx.fillStyle = hit ? '#39d98a' : '#ffffff';
+          lctx.beginPath(); lctx.arc(NOWX, y, 11, 0, Math.PI * 2); lctx.fill();
+          if (hit) {
+            lctx.strokeStyle = 'rgba(57,217,138,0.45)';
+            lctx.lineWidth = 3;
+            lctx.beginPath(); lctx.arc(NOWX, y, 18, 0, Math.PI * 2); lctx.stroke();
+          }
+        }
+      } else {
+        lctx.fillStyle = 'rgba(255,255,255,0.35)';
+        lctx.font = '600 26px Inter, Arial, sans-serif';
+        lctx.textAlign = 'center';
+        lctx.fillText('melody chart loading…', LW / 2, LH / 2);
+      }
+
       $('s-time').textContent = fmt(t);
       $('s-fill').style.width = dur() ? `${(t / dur()) * 100}%` : '0%';
       if (playing && t >= dur()) {
@@ -310,6 +472,6 @@ const homeHref = withBase('/');
         $('s-icon-pause').classList.add('hidden');
       }
       requestAnimationFrame(loop);
-    })();
+    })(performance.now());
   </script>
 </BaseLayout>
