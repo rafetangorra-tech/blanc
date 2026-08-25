@@ -34,8 +34,13 @@ const homeHref = withBase('/');
       <p class="mt-3 text-xs uppercase tracking-[0.2em] opacity-45">
         it gets faster. it always gets faster.
       </p>
+      <div class="mt-7 flex gap-2" id="ik-diffs">
+        <button class="ikdiff" data-diff="easy">easy</button>
+        <button class="ikdiff active" data-diff="medium">medium</button>
+        <button class="ikdiff" data-diff="hard">hard</button>
+      </div>
       <p id="ik-best" class="mt-4 font-mono text-sm opacity-60"></p>
-      <button id="ik-start" class="ikbtn-primary mt-8">Fall</button>
+      <button id="ik-start" class="ikbtn-primary mt-6">Fall</button>
     </div>
 
     <!-- game -->
@@ -97,6 +102,27 @@ const homeHref = withBase('/');
       opacity: 0.65;
     }
     .ikbtn-secondary:hover { opacity: 1; }
+    .ikdiff {
+      padding: 9px 20px;
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 700;
+      border: 1.5px solid currentColor;
+      opacity: 0.4;
+      transition: all 150ms ease;
+    }
+    .ikdiff.active {
+      opacity: 1;
+      background: #101010;
+      color: #f7f6f4;
+      border-color: #101010;
+    }
+    .ikdiff[data-diff='hard'].active {
+      background: #E23A55;
+      border-color: #E23A55;
+    }
   </style>
 
   <script>
@@ -187,7 +213,21 @@ const homeHref = withBase('/');
     ];
     const BAND_M = 300;
     const PX_PER_M = 10;
-    const SURGE_EVERY = 6; // seconds — it gets faster. it always gets faster.
+
+    // difficulty tiers — medium is the canonical tuning
+    const DIFFS = {
+      easy: { base: 140, surgeEvery: 8, surgeMult: 1.09, cap: 3.0, grow: 0.004,
+        blockBase: 1.55, blockMin: 0.45, patrolP: 0.45, patrolV: 90, patrolA: 12, fragMin: 1.2 },
+      medium: { base: 175, surgeEvery: 6, surgeMult: 1.12, cap: 4.2, grow: 0.006,
+        blockBase: 1.3, blockMin: 0.3, patrolP: 0.6, patrolV: 110, patrolA: 20, fragMin: 1.0 },
+      hard: { base: 215, surgeEvery: 4.5, surgeMult: 1.15, cap: 5.4, grow: 0.009,
+        blockBase: 1.0, blockMin: 0.22, patrolP: 0.78, patrolV: 135, patrolA: 26, fragMin: 0.85 },
+    } as const;
+    type DiffName = keyof typeof DIFFS;
+    let diffName: DiffName =
+      (localStorage.getItem('blanc-inkfall-diff') as DiffName) || 'medium';
+    if (!DIFFS[diffName]) diffName = 'medium';
+    let D = DIFFS[diffName];
 
     // sounds
     let actx: AudioContext | null = null;
@@ -222,7 +262,8 @@ const homeHref = withBase('/');
     let bandFlash = 0, bandFlashName = '';
 
     const bandAt = (m: number) => BANDS[((m / BAND_M) | 0) % BANDS.length];
-    const speedMult = () => Math.min(4.2, Math.pow(1.12, surges) * (1 + elapsed * 0.006));
+    const speedMult = () =>
+      Math.min(D.cap, Math.pow(D.surgeMult, surges) * (1 + elapsed * D.grow));
 
     function pickPoem() {
       const i = (Number(localStorage.getItem('blanc-inkfall-poem') || -1) + 1) % POEMS.length;
@@ -254,7 +295,7 @@ const homeHref = withBase('/');
       // fragments: the poem falls in order; missed ones come back around
       spawnF -= dt;
       if (spawnF <= 0) {
-        spawnF = Math.max(1.0, 2.2 - surges * 0.09);
+        spawnF = Math.max(D.fragMin, 2.2 - surges * 0.09);
         const remaining = poem.frags.map((_, i) => i).filter((i) => !caught[i]);
         if (remaining.length) {
           // prefer the earliest uncaught fragment, sometimes jump ahead
@@ -276,14 +317,16 @@ const homeHref = withBase('/');
       // writer's block
       spawnB -= dt;
       if (spawnB <= 0) {
-        spawnB = Math.max(0.3, 1.3 - surges * 0.1) + Math.random() * 0.35;
+        spawnB = Math.max(D.blockMin, D.blockBase - surges * 0.1) + Math.random() * 0.35;
         const bw = 170 + Math.random() * 130;
         blocks.push({
           x: bw / 2 + Math.random() * (W - bw),
           wy: cam + H + 60,
           w: bw,
           h: 40,
-          vx: Math.random() < 0.6 ? (Math.random() < 0.5 ? -1 : 1) * (110 + surges * 20) : 0,
+          vx: Math.random() < D.patrolP
+            ? (Math.random() < 0.5 ? -1 : 1) * (D.patrolV + surges * D.patrolA)
+            : 0,
         });
       }
     }
@@ -301,10 +344,10 @@ const homeHref = withBase('/');
       last = t;
       elapsed += dt;
       // surge: every few seconds the page pulls harder
-      if (elapsed > (surges + 1) * SURGE_EVERY) {
+      if (elapsed > (surges + 1) * D.surgeEvery) {
         surges++; surgeFlash = 0.8; sSurge();
       }
-      const speed = 175 * speedMult();
+      const speed = D.base * speedMult();
       cam += speed * dt;
       dist = cam / PX_PER_M;
       const band = bandAt(dist);
@@ -459,12 +502,13 @@ const homeHref = withBase('/');
       const complete = caught.every(Boolean);
       complete ? sComplete() : sDry();
       const s = score();
-      const best = Math.max(s, Number(localStorage.getItem('blanc-inkfall-best') || 0));
-      localStorage.setItem('blanc-inkfall-best', String(best));
+      const bestKey = `blanc-inkfall-best-${diffName}`;
+      const best = Math.max(s, Number(localStorage.getItem(bestKey) || 0));
+      localStorage.setItem(bestKey, String(best));
       $('ik-over-tag').textContent = complete ? 'you recovered the whole poem' : 'the pen ran dry';
       $('ik-final-score').textContent = String(s);
       $('ik-final-detail').textContent =
-        `${dist | 0}m fallen · ${nCaught()}/16 fragments · best ${best}`;
+        `${diffName} · ${dist | 0}m fallen · ${nCaught()}/16 fragments · best ${best}`;
       $('ik-poem-title').textContent = complete
         ? `“${poem.title}” — complete`
         : `fragments of “${poem.title}”`;
@@ -496,8 +540,26 @@ const homeHref = withBase('/');
     $('ik-start').addEventListener('click', startGame);
     $('ik-again').addEventListener('click', startGame);
 
-    const best0 = localStorage.getItem('blanc-inkfall-best');
-    if (best0) $('ik-best').textContent = `your best fall: ${best0}`;
+    // difficulty selector (persisted; best score tracked per tier)
+    function refreshBestLine() {
+      const b = localStorage.getItem(`blanc-inkfall-best-${diffName}`);
+      $('ik-best').textContent = b ? `your best ${diffName} fall: ${b}` : '';
+    }
+    document.querySelectorAll<HTMLElement>('.ikdiff').forEach((btn) => {
+      if (btn.dataset.diff === diffName) {
+        document.querySelectorAll('.ikdiff').forEach((x) => x.classList.remove('active'));
+        btn.classList.add('active');
+      }
+      btn.addEventListener('click', () => {
+        diffName = btn.dataset.diff as DiffName;
+        D = DIFFS[diffName];
+        localStorage.setItem('blanc-inkfall-diff', diffName);
+        document.querySelectorAll('.ikdiff').forEach((x) => x.classList.remove('active'));
+        btn.classList.add('active');
+        refreshBestLine();
+      });
+    });
+    refreshBestLine();
 
     $('ik-export').addEventListener('click', () => {
       const CW = 1080, CH = 1350;
@@ -521,7 +583,7 @@ const homeHref = withBase('/');
       });
       x.fillStyle = 'rgba(0,0,0,0.45)';
       x.font = `500 26px 'Inter Variable', Arial, sans-serif`;
-      x.fillText(`${dist | 0}m · ${score()} pts`, CW / 2, Math.min(y + 60, CH - 220));
+      x.fillText(`${diffName} · ${dist | 0}m · ${score()} pts`, CW / 2, Math.min(y + 60, CH - 220));
       x.fillStyle = '#0a0a0a';
       x.font = `900 64px 'Archivo Variable', 'Arial Black', sans-serif`;
       x.fillText('blanc', CW / 2, CH - 150);
