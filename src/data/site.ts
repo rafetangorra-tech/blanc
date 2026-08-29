@@ -96,7 +96,11 @@ And under all of it is the oldest partnership in the group: two brothers who’v
 In blanc, Jacqueline is the pen. She writes the line you rewind — the one that arrives in the second verse and quietly takes the whole song hostage. Golden World is where her handwriting shows most: unfiltered, diary-close detail, names-and-places honesty, the gut-punch delivered gently. And when the collective goes after House World’s pulse, she’s the reason there’s a story worth dancing to underneath it.
 
 She’s also family — married to Rafe, which makes blanc less a project and more a household: her words, his worlds, Nick’s voice. Three writers passing the same truth around the room until it becomes a song. Somebody has to write down what the heart actually said. That’s Jacqueline’s job, and nobody does it with more love.`,
-    // photo: 'members/jacqueline-tangorra.jpg', // ← awaiting Jacqueline's photos
+    photo: 'members/jacqueline-tangorra.jpg',
+    cardOrigin: '49% 21%',
+    bgPhoto: 'members/jacqueline-hero.jpg',
+    heroVideo: 'members/jacqueline-develop.mp4',
+    gallery: ['members/jacqueline-hat.jpg', 'members/jacqueline-hero.jpg'],
   },
 ];
 
