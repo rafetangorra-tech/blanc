@@ -5,7 +5,7 @@ export const site = {
   tagline: 'one group. many worlds.',
   intro:
     'blanc is a songwriting collective that refuses a single sound. We start from a blank page — then let each song flood it with its own color. Scroll to travel between our worlds.',
-  bookingEmail: 'rafetangorra@gmail.com',
+  bookingEmail: '3tsongwriting@gmail.com',
   social: {
     instagram: '', // e.g. 'https://instagram.com/songsbyblanc'
     spotify: '', // e.g. 'https://open.spotify.com/artist/…'
